@@ -31,6 +31,8 @@ const Home: NextPage = () => {
   const [enableFilecoinUpload, setEnableFilecoinUpload] = useState(false);
   const [downloadedImage, setDownloadedImage] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [reviewImages, setReviewImages] = useState<Record<string, string>>({});
+  const [downloadingReviews, setDownloadingReviews] = useState<Record<string, boolean>>({});
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
 
   // Fetch reviews for the connected wallet
@@ -328,6 +330,49 @@ Return ONLY the JSON object, no other text.`;
     }
   };
 
+  const handleDownloadReviewImage = async (pieceCid: string, reviewIndex: number) => {
+    if (!pieceCid || pieceCid === "placeholderPictureId") {
+      alert("No valid PieceCID to download!");
+      return;
+    }
+
+    const reviewKey = `${reviewIndex}-${pieceCid}`;
+
+    try {
+      setDownloadingReviews(prev => ({ ...prev, [reviewKey]: true }));
+      console.log("⬇️ Downloading review image from Filecoin...");
+      console.log(`📦 PieceCID: ${pieceCid}`);
+
+      // Call the backend API to download from Filecoin
+      const response = await fetch("/api/synapse/storage/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pieceCid: pieceCid,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to download from Filecoin");
+      }
+
+      console.log("✅ Download successful!");
+      console.log(`📏 Downloaded ${data.size} bytes`);
+      
+      // Store the downloaded image for this review
+      setReviewImages(prev => ({ ...prev, [reviewKey]: data.data }));
+    } catch (error) {
+      console.error("Download error:", error);
+      alert(`Failed to download: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setDownloadingReviews(prev => ({ ...prev, [reviewKey]: false }));
+    }
+  };
+
   const handleGetRandomNumber = async () => {
     try {
       // RandomNumberV2 address where the secure RNG is served (Flare Testnet Coston2)
@@ -619,48 +664,113 @@ Return ONLY the JSON object, no other text.`;
                           </div>
                         </div>
 
-                        {myReviews.map((review: any, index: number) => (
-                          <div
-                            key={index}
-                            className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-6 border border-base-300/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
-                          >
-                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xl">
-                                    {review.platformName.charAt(0)}
+                        {myReviews.map((review: any, index: number) => {
+                          const reviewKey = `${index}-${review.pictureId}`;
+                          const hasValidCid = review.pictureId && review.pictureId !== "placeholderPictureId";
+                          const isDownloadingThis = downloadingReviews[reviewKey];
+                          const downloadedImageUrl = reviewImages[reviewKey];
+
+                          return (
+                            <div
+                              key={index}
+                              className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-6 border border-base-300/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                            >
+                              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xl">
+                                      {review.platformName.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <h3 className="text-xl font-bold">{review.platformName}</h3>
+                                      <p className="text-sm text-base-content/60">@{review.accountName}</p>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <h3 className="text-xl font-bold">{review.platformName}</h3>
-                                    <p className="text-sm text-base-content/60">@{review.accountName}</p>
+                                </div>
+                                <div className="text-right bg-gradient-to-br from-warning/10 to-warning/5 px-4 py-3 rounded-xl border border-warning/20">
+                                  <div className="text-3xl mb-1">
+                                    {"⭐".repeat(Math.floor(Number(review.starRating) / 100))}
+                                  </div>
+                                  <div className="text-lg font-bold text-warning">
+                                    {(Number(review.starRating) / 100).toFixed(2)}/5.00
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-right bg-gradient-to-br from-warning/10 to-warning/5 px-4 py-3 rounded-xl border border-warning/20">
-                                <div className="text-3xl mb-1">
-                                  {"⭐".repeat(Math.floor(Number(review.starRating) / 100))}
+                              <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
+                                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
+                                    Total Reviews
+                                  </span>
+                                  <span className="text-lg font-bold">{review.numberOfReviews.toString()}</span>
                                 </div>
-                                <div className="text-lg font-bold text-warning">
-                                  {(Number(review.starRating) / 100).toFixed(2)}/5.00
+                                <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
+                                  <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
+                                    Account Age
+                                  </span>
+                                  <span className="text-lg font-bold">{review.ageOfAccount.toString()} days</span>
                                 </div>
                               </div>
+                              
+                              {/* Picture ID Display */}
+                              {hasValidCid && (
+                                <div className="mb-4 p-3 bg-base-200/30 rounded-xl border border-base-300/30">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs font-semibold text-base-content/60 flex items-center gap-1">
+                                      <span>🖼️</span> Picture ID:
+                                    </span>
+                                    <span className="text-xs font-mono text-base-content/80 truncate max-w-[200px]">
+                                      {review.pictureId}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Download Button */}
+                              {hasValidCid && !downloadedImageUrl && (
+                                <button
+                                  onClick={() => handleDownloadReviewImage(review.pictureId, index)}
+                                  disabled={isDownloadingThis}
+                                  className="btn btn-sm btn-secondary w-full shadow-md hover:shadow-lg transition-all duration-300"
+                                >
+                                  {isDownloadingThis ? (
+                                    <>
+                                      <span className="loading loading-spinner loading-sm"></span>
+                                      <span>Downloading...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>⬇️</span>
+                                      <span>Download from Filecoin</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+
+                              {/* Downloaded Image Display */}
+                              {downloadedImageUrl && (
+                                <div className="mt-4 space-y-2">
+                                  <div className="text-center">
+                                    <p className="text-xs font-semibold text-success flex items-center justify-center gap-1">
+                                      <span>📥</span>
+                                      <span>Retrieved from Filecoin</span>
+                                    </p>
+                                  </div>
+                                  <div className="relative rounded-xl overflow-hidden border border-success/50 shadow-lg">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={downloadedImageUrl}
+                                      alt={`${review.platformName} review`}
+                                      className="w-full h-auto object-contain"
+                                    />
+                                    <div className="absolute top-2 right-2 bg-success/90 text-success-content px-2 py-1 rounded-full text-xs font-semibold">
+                                      ✓ Filecoin
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
-                                <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
-                                  Total Reviews
-                                </span>
-                                <span className="text-lg font-bold">{review.numberOfReviews.toString()}</span>
-                              </div>
-                              <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
-                                <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
-                                  Account Age
-                                </span>
-                                <span className="text-lg font-bold">{review.ageOfAccount.toString()} days</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </>
                     ) : (
                       <div className="text-center py-16 bg-base-100/30 rounded-2xl border border-dashed border-base-300">
