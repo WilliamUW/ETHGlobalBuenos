@@ -4,10 +4,12 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Address } from "@scaffold-ui/components";
+import { IDKitWidget, ISuccessResult, VerificationLevel } from "@worldcoin/idkit";
 import type { NextPage } from "next";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon, PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { verify } from "~~/app/actions/verify";
 import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 type ReviewData = {
@@ -25,7 +27,21 @@ const Home: NextPage = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [extractedReview, setExtractedReview] = useState<ReviewData | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
+
+  const onSuccess = () => {
+    setIsVerified(true);
+  };
+
+  const handleVerify = async (proof: ISuccessResult) => {
+    const data = await verify(proof as any);
+    if (data.success) {
+      console.log("Successful response from backend:\n", JSON.stringify(data));
+    } else {
+      throw new Error(`Verification failed: ${data.detail}`);
+    }
+  };
 
   const handleFileUpload = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -177,6 +193,24 @@ Return ONLY the JSON object, no other text.`;
                 targetNetwork.id === hardhat.id ? `/blockexplorer/address/${connectedAddress}` : undefined
               }
             />
+          </div>
+
+          {/* World ID Verification */}
+          <div className="mt-6 flex justify-center">
+            <IDKitWidget
+              app_id="app_4020275d788fc6f5664d986dd931e5e6"
+              action="verify"
+              signal="user_value"
+              onSuccess={onSuccess}
+              handleVerify={handleVerify}
+              verification_level={VerificationLevel.Device}
+            >
+              {({ open }) => (
+                <button onClick={open} className="btn btn-secondary">
+                  {isVerified ? "✅ You are verified!" : "Verify with World ID"}
+                </button>
+              )}
+            </IDKitWidget>
           </div>
 
           {/* File Upload Dropbox */}

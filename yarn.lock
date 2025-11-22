@@ -4018,6 +4018,7 @@ __metadata:
     "@types/node": ~18.19.50
     "@types/react": ~19.0.7
     "@worldcoin/idkit": ^2.4.2
+    "@worldcoin/idkit-core": ^2.1.0
     abitype: 1.0.6
     autoprefixer: ~10.4.20
     bgipfs: ~0.0.12
@@ -5953,7 +5954,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@worldcoin/idkit-core@npm:2.1.0":
+"@worldcoin/idkit-core@npm:2.1.0, @worldcoin/idkit-core@npm:^2.1.0":
   version: 2.1.0
   resolution: "@worldcoin/idkit-core@npm:2.1.0"
   dependencies:
