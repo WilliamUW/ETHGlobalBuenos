@@ -224,7 +224,7 @@ Return ONLY the JSON object, no other text.`;
                   <Address address={connectedAddress} />
                 </div>
                 <p className="text-base-content/70 mb-6">
-                  Verify with World ID to ensure you're a unique human before submitting reviews.
+                  Verify with World ID to ensure you&apos;re a unique human before submitting reviews.
                 </p>
                 <IDKitWidget
                   app_id="app_4020275d788fc6f5664d986dd931e5e6"
@@ -385,15 +385,12 @@ Return ONLY the JSON object, no other text.`;
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold">Preview</h3>
-                      <button
-                        onClick={clearImage}
-                        className="btn btn-circle btn-sm btn-ghost"
-                        aria-label="Clear image"
-                      >
+                      <button onClick={clearImage} className="btn btn-circle btn-sm btn-ghost" aria-label="Clear image">
                         <XMarkIcon className="w-5 h-5" />
                       </button>
                     </div>
                     <div className="relative rounded-xl overflow-hidden border-2 border-base-300 shadow-lg">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={uploadedImage} alt="Uploaded preview" className="w-full h-auto object-contain" />
                     </div>
                     <button onClick={handleGeminiTest} className="btn btn-primary w-full mt-4 btn-lg">
@@ -415,7 +412,8 @@ Return ONLY the JSON object, no other text.`;
                     <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
                       <span className="font-semibold">Star Rating:</span>
                       <span className="text-right text-lg">
-                        {"⭐".repeat(Math.floor(extractedReview.starRating))} ({extractedReview.starRating.toFixed(2)}/5.00)
+                        {"⭐".repeat(Math.floor(extractedReview.starRating))} ({extractedReview.starRating.toFixed(2)}
+                        /5.00)
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">

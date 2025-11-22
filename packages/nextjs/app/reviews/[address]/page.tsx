@@ -13,7 +13,11 @@ export default function ReviewsPage() {
   const validAddress = address && isAddress(address) ? address : undefined;
 
   // Fetch reviews using the hook
-  const { data: reviews, isLoading, error } = useScaffoldReadContract({
+  const {
+    data: reviews,
+    isLoading,
+    error,
+  } = useScaffoldReadContract({
     contractName: "YourContract",
     functionName: "getReviews",
     args: validAddress ? [validAddress] : undefined,
@@ -117,9 +121,7 @@ export default function ReviewsPage() {
                         <p className="text-base-content/60 text-lg">{review.accountName}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl mb-1">
-                          {"⭐".repeat(Math.floor(Number(review.starRating) / 100))}
-                        </div>
+                        <div className="text-3xl mb-1">{"⭐".repeat(Math.floor(Number(review.starRating) / 100))}</div>
                         <div className="text-lg font-bold">{(Number(review.starRating) / 100).toFixed(2)}/5.00</div>
                       </div>
                     </div>
@@ -170,11 +172,10 @@ export default function ReviewsPage() {
           <div className="bg-base-200 rounded-2xl p-12 shadow-xl border-2 border-base-300 text-center">
             <div className="text-6xl mb-4">📝</div>
             <h2 className="text-2xl font-bold mb-2">No Reviews Found</h2>
-            <p className="text-base-content/70">This address doesn't have any reviews on the blockchain yet.</p>
+            <p className="text-base-content/70">This address doesn&apos;t have any reviews on the blockchain yet.</p>
           </div>
         )}
       </div>
     </div>
   );
 }
-

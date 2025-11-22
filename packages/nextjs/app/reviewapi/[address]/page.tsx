@@ -12,7 +12,11 @@ export default function ReviewApiPage() {
   const validAddress = address && isAddress(address) ? address : undefined;
 
   // Fetch reviews using the hook
-  const { data: reviews, isLoading, error } = useScaffoldReadContract({
+  const {
+    data: reviews,
+    isLoading,
+    error,
+  } = useScaffoldReadContract({
     contractName: "YourContract",
     functionName: "getReviews",
     args: validAddress ? [validAddress] : undefined,
@@ -88,4 +92,3 @@ export default function ReviewApiPage() {
     </div>
   );
 }
-
