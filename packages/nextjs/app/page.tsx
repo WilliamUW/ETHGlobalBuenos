@@ -96,12 +96,15 @@ const Home: NextPage = () => {
     }
 
     try {
+      // Convert star rating to integer with 2 decimal precision (e.g., 4.89 -> 489)
+      const starRatingInt = Math.round(extractedReview.starRating * 100);
+
       await writeYourContractAsync({
         functionName: "writeReview",
         args: [
           connectedAddress,
           extractedReview.platformName,
-          extractedReview.starRating,
+          starRatingInt,
           BigInt(extractedReview.numberOfReviews),
           BigInt(extractedReview.ageOfAccount),
           extractedReview.accountName,
@@ -131,13 +134,14 @@ const Home: NextPage = () => {
       const prompt = `Extract the following information from this image and return ONLY a valid JSON object with these exact fields:
 {
   "platformName": "name of the platform/service",
-  "starRating": number from 0-5,
+  "starRating": decimal number from 0.00 to 5.00 (e.g., 4.89, 5.00, 3.75),
   "numberOfReviews": total number of reviews,
   "ageOfAccount": age of account in days/months/years (convert to a number representing days),
   "accountName": username or account name,
   "pictureId": use "placeholderPictureId" for now
 }
 
+IMPORTANT: starRating should be a decimal number with up to 2 decimal places (e.g., 4.89, not just 4 or 5).
 If any field is not visible or cannot be determined, use reasonable defaults (empty string for strings, 0 for numbers).
 Return ONLY the JSON object, no other text.`;
 
@@ -220,7 +224,7 @@ Return ONLY the JSON object, no other text.`;
                   handleVerify={handleVerify}
                   verification_level={VerificationLevel.Device}
                 >
-                  {({ open }) => (
+                  {({ open }: { open: () => void }) => (
                     <button onClick={open} className="btn btn-primary btn-lg w-full">
                       Verify with World ID
                     </button>
@@ -298,7 +302,7 @@ Return ONLY the JSON object, no other text.`;
                     <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
                       <span className="font-semibold">Star Rating:</span>
                       <span className="text-right text-lg">
-                        {"⭐".repeat(extractedReview.starRating)} ({extractedReview.starRating}/5)
+                        {"⭐".repeat(Math.floor(extractedReview.starRating))} ({extractedReview.starRating.toFixed(2)}/5.00)
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
