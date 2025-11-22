@@ -140,6 +140,30 @@ const Home: NextPage = () => {
       const [header, base64] = uploadedImage.split(",");
       const mimeType = header.match(/:(.*?);/)?.[1] || "image/jpeg";
 
+      if (false) {
+        // Upload image to Filecoin as base64 string
+        console.log("📤 Uploading image to Filecoin...");
+        const uploadResponse = await fetch("/api/synapse/storage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageBase64: uploadedImage, // Send the full data URL (includes mime type + base64)
+          }),
+        });
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.error || "Failed to upload to Filecoin");
+        }
+
+        console.log("✅ Image uploaded to Filecoin!");
+        console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
+        console.log(`📏 Size: ${uploadData.size} bytes`);
+      }
+
       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -176,6 +200,8 @@ Return ONLY the JSON object, no other text.`;
         if (jsonMatch) {
           const extractedData = JSON.parse(jsonMatch[0]) as ReviewData;
           console.log("Extracted Review Data:", extractedData);
+          // Store the pieceCID in the extracted data for later use
+          // extractedData.pictureId = uploadData.pieceCid;
           setExtractedReview(extractedData);
         } else {
           console.log("No JSON found in response");
@@ -186,6 +212,7 @@ Return ONLY the JSON object, no other text.`;
       }
     } catch (error) {
       console.error("Gemini API error:", error);
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
@@ -550,11 +577,10 @@ Return ONLY the JSON object, no other text.`;
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
-                  className={`relative border-2 border-dashed rounded-2xl p-12 transition-all duration-300 ${
-                    isDragging
+                  className={`relative border-2 border-dashed rounded-2xl p-12 transition-all duration-300 ${isDragging
                       ? "border-primary bg-gradient-to-br from-primary/20 to-secondary/20 scale-105"
                       : "border-base-300 hover:border-primary hover:bg-primary/5"
-                  } cursor-pointer group`}
+                    } cursor-pointer group`}
                 >
                   <input
                     type="file"
