@@ -78,6 +78,19 @@ const Home: NextPage = () => {
       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+      const prompt = `Extract the following information from this image and return ONLY a valid JSON object with these exact fields:
+{
+  "platformName": "name of the platform/service",
+  "starRating": number from 0-5,
+  "numberOfReviews": total number of reviews,
+  "ageOfAccount": age of account in days/months/years (convert to a number representing days),
+  "accountName": username or account name,
+  "pictureId": use "placeholderPictureId" for now
+}
+
+If any field is not visible or cannot be determined, use reasonable defaults (empty string for strings, 0 for numbers).
+Return ONLY the JSON object, no other text.`;
+
       // Generate content with image using the correct API pattern
       const result = await model.generateContent([
         {
@@ -86,10 +99,24 @@ const Home: NextPage = () => {
             data: base64,
           },
         },
-        { text: "Describe what you see in this image in one sentence." },
+        { text: prompt },
       ]);
 
-      console.log(result.response.text());
+      const responseText = result.response.text();
+      console.log("Raw AI Response:", responseText);
+
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const extractedData = JSON.parse(jsonMatch[0]);
+          console.log("Extracted Review Data:", extractedData);
+        } else {
+          console.log("No JSON found in response");
+        }
+      } catch (parseError) {
+        console.error("Failed to parse JSON:", parseError);
+        console.log("Response text:", responseText);
+      }
     } catch (error) {
       console.error("Gemini API error:", error);
     }
