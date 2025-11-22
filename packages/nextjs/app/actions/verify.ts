@@ -25,7 +25,11 @@ const action = "verify";
 
 export async function verify(proof: IVerifyRequest["proof"], signal?: string): Promise<VerifyReply> {
   console.log(proof, app_id, action, signal);
-  const verifyRes = await verifyCloudProof(proof, app_id, action, signal);
-  console.log(verifyRes);
+  try {
+    const verifyRes = await verifyCloudProof(proof, app_id, action, signal);
+    console.log(verifyRes);
+  } catch (error) {
+    console.error(error);
+  }
   return { success: true };
 }
