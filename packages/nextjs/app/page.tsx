@@ -65,10 +65,30 @@ const Home: NextPage = () => {
   }, []);
 
   const handleGeminiTest = async () => {
+    if (!uploadedImage) {
+      alert("Please upload an image first!");
+      return;
+    }
+
     try {
+      // Extract base64 data and mime type from data URL
+      const [header, base64] = uploadedImage.split(",");
+      const mimeType = header.match(/:(.*?);/)?.[1] || "image/jpeg";
+
       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      const result = await model.generateContent("Hello, how are you?");
+
+      // Generate content with image using the correct API pattern
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64,
+          },
+        },
+        { text: "Describe what you see in this image in one sentence." },
+      ]);
+
       console.log(result.response.text());
     } catch (error) {
       console.error("Gemini API error:", error);
