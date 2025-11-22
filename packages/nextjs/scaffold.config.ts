@@ -1,4 +1,5 @@
 import * as chains from "viem/chains";
+import { Chain } from "viem/chains";
 
 export type BaseConfig = {
   targetNetworks: readonly chains.Chain[];
@@ -13,10 +14,36 @@ export type ScaffoldConfig = BaseConfig;
 
 export const DEFAULT_ALCHEMY_API_KEY = "cR4WnXePioePZ5fFrnSiR";
 
+// Define Flare Testnet Coston2 chain
+export const flareCoston2 = {
+  id: 114,
+  name: "Flare Testnet Coston2",
+  nativeCurrency: {
+    name: "Coston2 Flare",
+    symbol: "C2FLR",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://coston2-api.flare.network/ext/C/rpc"],
+    },
+    public: {
+      http: ["https://coston2-api.flare.network/ext/C/rpc"],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "Flare Explorer",
+      url: "https://coston2-explorer.flare.network",
+    },
+  },
+  testnet: true,
+} as const satisfies Chain;
+
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.hardhat],
-  // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
+  targetNetworks: [flareCoston2],
+  // The interval at which your front-end polls the RPC servers for new data
   pollingInterval: 30000,
   // This is ours Alchemy's default API key.
   // You can get your own at https://dashboard.alchemyapi.io
@@ -34,7 +61,7 @@ const scaffoldConfig = {
   // It's recommended to store it in an env variable:
   // .env.local for local testing, and in the Vercel/system env config for live apps.
   walletConnectProjectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "3a8170812b534d0ff9d794f19a901d64",
-  onlyLocalBurnerWallet: true,
+  onlyLocalBurnerWallet: false,
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;
