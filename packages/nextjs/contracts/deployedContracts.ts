@@ -5,9 +5,9 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
-  31337: {
+  114: {
     YourContract: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0x71c943B5e10abD83290AB54C6DFC65Cba22B60F3",
       abi: [
         {
           inputs: [
@@ -108,9 +108,9 @@ const deployedContracts = {
                   type: "string",
                 },
                 {
-                  internalType: "uint8",
+                  internalType: "uint16",
                   name: "starRating",
-                  type: "uint8",
+                  type: "uint16",
                 },
                 {
                   internalType: "uint256",
@@ -174,9 +174,9 @@ const deployedContracts = {
               type: "string",
             },
             {
-              internalType: "uint8",
+              internalType: "uint16",
               name: "_starRating",
-              type: "uint8",
+              type: "uint16",
             },
             {
               internalType: "uint256",
@@ -210,7 +210,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 1,
     },
   },
 } as const;
