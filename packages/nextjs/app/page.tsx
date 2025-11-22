@@ -8,7 +8,7 @@ import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { verify } from "~~/app/actions/verify";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 type ReviewData = {
   platformName: string;
@@ -25,7 +25,15 @@ const Home: NextPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [extractedReview, setExtractedReview] = useState<ReviewData | null>(null);
   const [isVerified, setIsVerified] = useState(false);
+  const [showMyReviews, setShowMyReviews] = useState(false);
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
+
+  // Fetch reviews for the connected wallet
+  const { data: myReviews, refetch: refetchReviews } = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "getReviews",
+    args: [connectedAddress],
+  });
 
   const onSuccess = () => {
     setIsVerified(true);
@@ -112,6 +120,8 @@ const Home: NextPage = () => {
         ],
       });
       alert("Review successfully written to blockchain!");
+      // Refetch reviews after successful submission
+      refetchReviews();
     } catch (error) {
       console.error("Error writing review:", error);
     }
@@ -240,6 +250,71 @@ Return ONLY the JSON object, no other text.`;
                 <p className="text-success font-semibold">
                   ✅ Verified! You can now upload and submit reviews to the blockchain.
                 </p>
+              </div>
+
+              {/* My Reviews Section */}
+              <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">My Reviews</h2>
+                  <button
+                    onClick={() => {
+                      setShowMyReviews(!showMyReviews);
+                      if (!showMyReviews) refetchReviews();
+                    }}
+                    className="btn btn-primary"
+                  >
+                    {showMyReviews ? "Hide Reviews" : "View My Reviews"}
+                  </button>
+                </div>
+
+                {showMyReviews && (
+                  <div className="space-y-4">
+                    {myReviews && myReviews.length > 0 ? (
+                      <>
+                        <div className="text-sm text-base-content/70 mb-4">
+                          Found {myReviews.length} review{myReviews.length !== 1 ? "s" : ""} for{" "}
+                          <Address address={connectedAddress} />
+                        </div>
+                        {myReviews.map((review: any, index: number) => (
+                          <div key={index} className="bg-base-100 rounded-xl p-6 border-2 border-base-300">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-bold">{review.platformName}</h3>
+                                <p className="text-sm text-base-content/60">{review.accountName}</p>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl mb-1">
+                                  {"⭐".repeat(Math.floor(Number(review.starRating) / 100))}
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  {(Number(review.starRating) / 100).toFixed(2)}/5.00
+                                </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex justify-between p-2 bg-base-200 rounded">
+                                <span className="font-semibold">Total Reviews:</span>
+                                <span>{review.numberOfReviews.toString()}</span>
+                              </div>
+                              <div className="flex justify-between p-2 bg-base-200 rounded">
+                                <span className="font-semibold">Account Age:</span>
+                                <span>{review.ageOfAccount.toString()} days</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-6xl mb-4">📝</div>
+                        <p className="text-lg text-base-content/70">No reviews found for your address</p>
+                        <p className="text-sm text-base-content/50 mt-2">
+                          Upload a screenshot to add your first review!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* File Upload Section */}
