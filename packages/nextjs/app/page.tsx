@@ -283,7 +283,11 @@ Return ONLY the JSON object, no other text.`;
             /* Step 2: Verify with World ID */
             <div className="flex flex-col items-center justify-center min-h-[450px]">
               <div className="relative bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-12 shadow-2xl border border-base-300/50 text-center max-w-lg backdrop-blur-sm">
-                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                <div
+                  className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-3xl shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300"
+                  onClick={() => setIsVerified(true)}
+                  title="Click to skip verification (dev mode)"
+                >
                   🌍
                 </div>
                 <div className="mt-6">
