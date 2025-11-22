@@ -28,6 +28,7 @@ const Home: NextPage = () => {
   const [isVerified, setIsVerified] = useState(false);
   const [showMyReviews, setShowMyReviews] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [enableFilecoinUpload, setEnableFilecoinUpload] = useState(false);
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
 
   // Fetch reviews for the connected wallet
@@ -171,40 +172,45 @@ const Home: NextPage = () => {
     }
 
     try {
-      // Compress image before uploading to Filecoin
-      console.log("🗜️ Compressing image...");
-      const compressedImage = await compressImage(uploadedImage, 800, 0.7);
-      const originalSize = uploadedImage.length;
-      const compressedSize = compressedImage.length;
-      console.log(`Original size: ${(originalSize / 1024).toFixed(2)} KB`);
-      console.log(`Compressed size: ${(compressedSize / 1024).toFixed(2)} KB`);
-      console.log(`Compression ratio: ${((1 - compressedSize / originalSize) * 100).toFixed(1)}%`);
+      let pieceCid = "placeholderPictureId";
 
-      // Extract base64 data and mime type from data URL
-      const [header, base64] = compressedImage.split(",");
-      const mimeType = header.match(/:(.*?);/)?.[1] || "image/jpeg";
+      // Conditionally upload to Filecoin based on toggle
+      if (enableFilecoinUpload) {
+        // Compress image before uploading to Filecoin
+        console.log("🗜️ Compressing image...");
+        const compressedImage = await compressImage(uploadedImage, 800, 0.7);
+        const originalSize = uploadedImage.length;
+        const compressedSize = compressedImage.length;
+        console.log(`Original size: ${(originalSize / 1024).toFixed(2)} KB`);
+        console.log(`Compressed size: ${(compressedSize / 1024).toFixed(2)} KB`);
+        console.log(`Compression ratio: ${((1 - compressedSize / originalSize) * 100).toFixed(1)}%`);
 
-      // Upload compressed image to Filecoin as base64 string
-      console.log("📤 Uploading compressed image to Filecoin...");
-      const uploadResponse = await fetch("/api/synapse/storage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          imageBase64: compressedImage, // Send the compressed data URL
-        }),
-      });
+        // Upload compressed image to Filecoin as base64 string
+        console.log("📤 Uploading compressed image to Filecoin...");
+        const uploadResponse = await fetch("/api/synapse/storage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageBase64: compressedImage, // Send the compressed data URL
+          }),
+        });
 
-      const uploadData = await uploadResponse.json();
+        const uploadData = await uploadResponse.json();
 
-      if (!uploadResponse.ok) {
-        throw new Error(uploadData.error || "Failed to upload to Filecoin");
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.error || "Failed to upload to Filecoin");
+        }
+
+        console.log("✅ Image uploaded to Filecoin!");
+        console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
+        console.log(`📏 Size: ${uploadData.size} bytes`);
+        
+        pieceCid = uploadData.pieceCid;
+      } else {
+        console.log("⏭️ Filecoin upload disabled, skipping...");
       }
-
-      console.log("✅ Image uploaded to Filecoin!");
-      console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
-      console.log(`📏 Size: ${uploadData.size} bytes`);
 
       // Use original (uncompressed) image for AI extraction to get better quality results
       const [, originalBase64] = uploadedImage.split(",");
@@ -219,8 +225,8 @@ const Home: NextPage = () => {
   "starRating": decimal number from 0.00 to 5.00 (e.g., 4.89, 5.00, 3.75),
   "numberOfReviews": total number of reviews,
   "ageOfAccount": age of account in days/months/years (convert to a number representing days),
-  "accountName": username or account name",
-  "pictureId": use "placeholderPictureId" for now
+  "accountName": "username or account name",
+  "pictureId": "placeholderPictureId"
 }
 
 IMPORTANT: starRating should be a decimal number with up to 2 decimal places (e.g., 4.89, not just 4 or 5).
@@ -246,8 +252,8 @@ Return ONLY the JSON object, no other text.`;
         if (jsonMatch) {
           const extractedData = JSON.parse(jsonMatch[0]) as ReviewData;
           console.log("Extracted Review Data:", extractedData);
-          // Store the pieceCID in the extracted data for later use
-          extractedData.pictureId = uploadData.pieceCid;
+          // Store the pieceCID (or placeholder) in the extracted data
+          extractedData.pictureId = pieceCid;
           setExtractedReview(extractedData);
         } else {
           console.log("No JSON found in response");
@@ -720,6 +726,17 @@ Return ONLY the JSON object, no other text.`;
                       </span>
                       <span className="text-right font-bold">@{extractedReview.accountName}</span>
                     </div>
+                    <div className="flex justify-between items-center p-4 bg-base-100/50 backdrop-blur-sm rounded-2xl border border-base-300/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>🖼️</span> Picture ID:
+                      </span>
+                      <span className="text-right font-mono text-xs break-all max-w-md">
+                        {String(extractedReview.pictureId)}
+                        {extractedReview.pictureId !== "placeholderPictureId" && (
+                          <span className="ml-2 text-success">✓ On Filecoin</span>
+                        )}
+                      </span>
+                    </div>
                   </div>
                   <button
                     onClick={handleWriteReview}
@@ -773,6 +790,50 @@ Return ONLY the JSON object, no other text.`;
                     <p className="text-xs text-base-content/50 mt-3 text-center">
                       Check your browser console for details
                     </p>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="divider">AND</div>
+
+                  {/* Filecoin Upload Toggle Section */}
+                  <div>
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
+                        📸 Filecoin Image Upload
+                      </h3>
+                      <p className="text-xs text-base-content/60">
+                        Enable automatic upload of review screenshots to Filecoin
+                      </p>
+                    </div>
+                    <div className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-6 border border-base-300/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg mb-1">
+                            {enableFilecoinUpload ? "✅ Upload Enabled" : "⏸️ Upload Disabled"}
+                          </h4>
+                          <p className="text-xs text-base-content/60">
+                            {enableFilecoinUpload
+                              ? "Images will be uploaded to Filecoin when extracting review data"
+                              : "Images will not be uploaded (faster, uses placeholder ID)"}
+                          </p>
+                        </div>
+                        <label className="cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="toggle toggle-success toggle-lg"
+                            checked={enableFilecoinUpload}
+                            onChange={e => setEnableFilecoinUpload(e.target.checked)}
+                          />
+                        </label>
+                      </div>
+                      {enableFilecoinUpload && (
+                        <div className="mt-4 bg-warning/10 border border-warning/30 rounded-xl p-3">
+                          <p className="text-xs text-base-content/70">
+                            ⚠️ Note: Enabling this will add ~25-85 seconds to the extraction process for Filecoin upload
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Divider */}
