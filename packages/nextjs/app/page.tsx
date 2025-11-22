@@ -275,6 +275,44 @@ Return ONLY the JSON object, no other text.`;
                           Found {myReviews.length} review{myReviews.length !== 1 ? "s" : ""} for{" "}
                           <Address address={connectedAddress} />
                         </div>
+
+                        {/* Summary Statistics */}
+                        <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl p-6 border-2 border-primary/20 mb-6">
+                          <h3 className="text-lg font-bold mb-4 text-center">Summary Statistics</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-base-100 rounded-lg p-4 text-center">
+                              <div className="text-3xl font-bold text-primary">
+                                {(
+                                  myReviews.reduce((sum: number, r: any) => sum + Number(r.starRating), 0) /
+                                  myReviews.length /
+                                  100
+                                ).toFixed(2)}
+                              </div>
+                              <div className="text-xs text-base-content/60 mt-1">Average Stars</div>
+                            </div>
+                            <div className="bg-base-100 rounded-lg p-4 text-center">
+                              <div className="text-3xl font-bold text-secondary">
+                                {myReviews
+                                  .reduce((sum: number, r: any) => sum + Number(r.numberOfReviews), 0)
+                                  .toLocaleString()}
+                              </div>
+                              <div className="text-xs text-base-content/60 mt-1">Total Reviews</div>
+                            </div>
+                            <div className="bg-base-100 rounded-lg p-4 text-center">
+                              <div className="text-3xl font-bold text-accent">
+                                {new Set(myReviews.map((r: any) => r.platformName)).size}
+                              </div>
+                              <div className="text-xs text-base-content/60 mt-1">Platforms</div>
+                            </div>
+                            <div className="bg-base-100 rounded-lg p-4 text-center">
+                              <div className="text-3xl font-bold text-info">
+                                {Math.max(...myReviews.map((r: any) => Number(r.ageOfAccount)))}
+                              </div>
+                              <div className="text-xs text-base-content/60 mt-1">Oldest Account (days)</div>
+                            </div>
+                          </div>
+                        </div>
+
                         {myReviews.map((review: any, index: number) => (
                           <div key={index} className="bg-base-100 rounded-xl p-6 border-2 border-base-300">
                             <div className="flex justify-between items-start mb-4">
