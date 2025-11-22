@@ -29,6 +29,8 @@ const Home: NextPage = () => {
   const [showMyReviews, setShowMyReviews] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [enableFilecoinUpload, setEnableFilecoinUpload] = useState(false);
+  const [downloadedImage, setDownloadedImage] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
 
   // Fetch reviews for the connected wallet
@@ -133,6 +135,7 @@ const Home: NextPage = () => {
   const clearImage = useCallback(() => {
     setUploadedImage(null);
     setExtractedReview(null);
+    setDownloadedImage(null);
   }, []);
 
   const handleWriteReview = async () => {
@@ -172,6 +175,9 @@ const Home: NextPage = () => {
     }
 
     try {
+      // Clear any previously downloaded image
+      setDownloadedImage(null);
+      
       let pieceCid = "placeholderPictureId";
 
       // Conditionally upload to Filecoin based on toggle
@@ -278,6 +284,47 @@ Return ONLY the JSON object, no other text.`;
     } catch (error) {
       console.error("Error:", error);
       alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+
+  const handleDownloadFromFilecoin = async (pieceCid: string) => {
+    if (!pieceCid || pieceCid === "placeholderPictureId") {
+      alert("No valid PieceCID to download!");
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      console.log("⬇️ Downloading from Filecoin...");
+      console.log(`📦 PieceCID: ${pieceCid}`);
+
+      // Call the backend API to download from Filecoin
+      const response = await fetch("/api/synapse/storage/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pieceCid: pieceCid,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to download from Filecoin");
+      }
+
+      console.log("✅ Download successful!");
+      console.log(`📏 Downloaded ${data.size} bytes`);
+      
+      // Set the downloaded base64 image
+      setDownloadedImage(data.data);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert(`Failed to download: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -751,6 +798,52 @@ Return ONLY the JSON object, no other text.`;
                       </span>
                     </div>
                   </div>
+
+                  {/* Download from Filecoin Button */}
+                  {extractedReview.pictureId !== "placeholderPictureId" && (
+                    <div className="mb-8">
+                      <button
+                        onClick={() => handleDownloadFromFilecoin(extractedReview.pictureId)}
+                        disabled={isDownloading}
+                        className="btn btn-secondary w-full btn-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        {isDownloading ? (
+                          <>
+                            <span className="loading loading-spinner loading-md"></span>
+                            <span>Downloading from Filecoin...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2">⬇️</span>
+                            Download Image from Filecoin
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Downloaded Image Display */}
+                  {downloadedImage && (
+                    <div className="mb-8 space-y-4">
+                      <div className="text-center">
+                        <h4 className="text-xl font-bold flex items-center justify-center gap-2">
+                          <span>📥</span>
+                          <span>Downloaded from Filecoin</span>
+                        </h4>
+                        <p className="text-sm text-base-content/60 mt-1">
+                          Retrieved from decentralized storage
+                        </p>
+                      </div>
+                      <div className="relative rounded-2xl overflow-hidden border border-success/50 shadow-xl bg-base-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={downloadedImage} alt="Downloaded from Filecoin" className="w-full h-auto object-contain" />
+                        <div className="absolute top-2 right-2 bg-success/90 text-success-content px-3 py-1 rounded-full text-xs font-semibold">
+                          ✓ From Filecoin
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={handleWriteReview}
                     className="btn btn-success w-full btn-lg text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
