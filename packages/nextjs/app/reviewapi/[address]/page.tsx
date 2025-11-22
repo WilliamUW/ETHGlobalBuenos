@@ -19,7 +19,7 @@ export default function ReviewApiPage() {
   } = useScaffoldReadContract({
     contractName: "YourContract",
     functionName: "getReviews",
-    args: validAddress ? [validAddress] : undefined,
+    args: [validAddress],
   });
 
   if (!validAddress) {

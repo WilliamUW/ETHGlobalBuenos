@@ -208,9 +208,7 @@ Return ONLY the JSON object, no other text.`;
                 <p className="text-base-content/70 mb-6">
                   Connect your wallet to get started with secure, verified reviews.
                 </p>
-                <p className="text-sm text-base-content/50">
-                  Click the button in the top right corner to connect
-                </p>
+                <p className="text-sm text-base-content/50">Click the button in the top right corner to connect</p>
               </div>
             </div>
           ) : !isVerified ? (
