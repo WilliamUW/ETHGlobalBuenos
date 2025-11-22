@@ -4017,8 +4017,9 @@ __metadata:
     "@trivago/prettier-plugin-sort-imports": ~4.3.0
     "@types/node": ~18.19.50
     "@types/react": ~19.0.7
-    "@worldcoin/idkit": ^2.4.2
-    "@worldcoin/idkit-core": ^2.1.0
+    "@worldcoin/idkit": ^1.1.4
+    "@worldcoin/idkit-core": ^1.3.0
+    "@worldcoin/idkit-standalone": ^1.1.4
     abitype: 1.0.6
     autoprefixer: ~10.4.20
     bgipfs: ~0.0.12
@@ -5954,34 +5955,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@worldcoin/idkit-core@npm:2.1.0, @worldcoin/idkit-core@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@worldcoin/idkit-core@npm:2.1.0"
+"@worldcoin/idkit-core@npm:1.5.0, @worldcoin/idkit-core@npm:^1.3.0":
+  version: 1.5.0
+  resolution: "@worldcoin/idkit-core@npm:1.5.0"
   dependencies:
     browser-or-node: 3.0.0-pre.0
     buffer: ^6.0.3
     ox: ^0.1.0
     zustand: ^4.5
-  checksum: 31e0b002cdb2a3bd8c3f3d96a51da501037a4a38f2e092bf8f658d4213f4b2be7ba7d598c9b6abb97c3a335b9451c94111f6520ba30d104f836828d6deabb3df
+  peerDependencies:
+    react-native-quick-crypto: ^0.7.13
+  peerDependenciesMeta:
+    react-native-quick-crypto:
+      optional: true
+  checksum: 68b2a99521056af650d3abb5037f7b5ca0c0dc29177706fdc67be61388f03bad255a161701f96cb258e729cb996632e064f7a36765770af67bd7d4ca16829ee6
   languageName: node
   linkType: hard
 
-"@worldcoin/idkit@npm:^2.4.2":
-  version: 2.4.2
-  resolution: "@worldcoin/idkit@npm:2.4.2"
+"@worldcoin/idkit-standalone@npm:^1.1.4":
+  version: 1.5.0
+  resolution: "@worldcoin/idkit-standalone@npm:1.5.0"
+  dependencies:
+    "@worldcoin/idkit": ^1.5.0
+    react: ">18.0.0"
+    react-dom: ">18.0.0"
+  checksum: 92b1151aa6f29bcb5f40990cc111baf79ba859bcc1c35b1f511fb34e1e77cfea34c52641f1bc587e4d186d688a6a6187585ba35f512735fcc3b1fe96bf3adb8a
+  languageName: node
+  linkType: hard
+
+"@worldcoin/idkit@npm:^1.1.4, @worldcoin/idkit@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@worldcoin/idkit@npm:1.5.0"
   dependencies:
     "@radix-ui/react-dialog": ^1.1.1
     "@radix-ui/react-toast": ^1.2.1
     "@tailwindcss/forms": ^0.5.7
-    "@worldcoin/idkit-core": 2.1.0
+    "@worldcoin/idkit-core": 1.5.0
     copy-to-clipboard: ^3.3.3
     framer-motion: ^11.2.14
     qrcode: ^1.5.3
+    react-shadow: ^20.6.0
     zustand: ^4.5.4
   peerDependencies:
     react: ">18.0.0"
     react-dom: ">18.0.0"
-  checksum: b6f8103b494d1487768b546e41c4192cc5a6ed0cfe1f20652805b48c0a70d3de6985edba21834ce3fed6137df0b34be0ade35d66349b18b882849a56974f061d
+  checksum: bcd74a786c197ba3c880c104c6596a80b371757e193864c862f14538e66f7c41c5e9c44b1052a3ef5243765281ac9c991e303958069ef7c95fd2bb5f674d3cf2
   languageName: node
   linkType: hard
 
@@ -10895,6 +10913,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"humps@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "humps@npm:2.0.1"
+  checksum: 7d5a674cfca2f34c04562f6fd0d129b4c43a5caf85fcc1c9eacf5d0729554c9375db362c4232519b37369c94dd2560d85f96ad4091a8fbf4af4e625ab5214a30
+  languageName: node
+  linkType: hard
+
 "husky@npm:~9.1.6":
   version: 9.1.7
   resolution: "husky@npm:9.1.7"
@@ -15091,6 +15116,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dom@npm:>18.0.0":
+  version: 19.2.0
+  resolution: "react-dom@npm:19.2.0"
+  dependencies:
+    scheduler: ^0.27.0
+  peerDependencies:
+    react: ^19.2.0
+  checksum: b6ec952f68a29dcc847143ad48974477e1d3b95cb0a6e0039dd93c7fe64d0ef51f2ca09a19c5eb892ba625ba88c4bcc6f8bc3bdd1c33ccc3f6f17acabbb4882f
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:~19.0.0":
   version: 19.0.0
   resolution: "react-dom@npm:19.0.0"
@@ -15197,6 +15233,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-shadow@npm:^20.6.0":
+  version: 20.6.0
+  resolution: "react-shadow@npm:20.6.0"
+  dependencies:
+    humps: ^2.0.1
+  peerDependencies:
+    prop-types: ^15.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: a27b013d0eb68e6b519f2c90dfbe80c43b9a5fdbaa908b390c3b24bedf326b35b2e227d010aaf21711eda0322e1aa420117b6b0f25f9e58ce4385e19896b1e39
+  languageName: node
+  linkType: hard
+
 "react-style-singleton@npm:^2.2.1, react-style-singleton@npm:^2.2.2, react-style-singleton@npm:^2.2.3":
   version: 2.2.3
   resolution: "react-style-singleton@npm:2.2.3"
@@ -15210,6 +15259,13 @@ __metadata:
     "@types/react":
       optional: true
   checksum: a7b0bf493c9231065ebafa84c4237aed997c746c561196121b7de82fe155a5355b372db5070a3ac9fe980cf7f60dc0f1e8cf6402a2aa5b2957392932ccf76e76
+  languageName: node
+  linkType: hard
+
+"react@npm:>18.0.0":
+  version: 19.2.0
+  resolution: "react@npm:19.2.0"
+  checksum: 33dd01bf699e1c5040eb249e0f552519adf7ee90b98c49d702a50bf23af6852ea46023a5f7f93966ab10acd7a45428fa0f193c686ecdaa7a75a03886e53ec3fe
   languageName: node
   linkType: hard
 
@@ -15699,6 +15755,13 @@ __metadata:
   version: 0.25.0
   resolution: "scheduler@npm:0.25.0"
   checksum: b7bb9fddbf743e521e9aaa5198a03ae823f5e104ebee0cb9ec625392bb7da0baa1c28ab29cee4b1e407a94e76acc6eee91eeb749614f91f853efda2613531566
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "scheduler@npm:0.27.0"
+  checksum: 92644ead0a9443e20f9d24132fe93675b156209b9eeb35ea245f8a86768d0cc0fcca56f341eeef21d9b6dd8e72d6d5e260eb5a41d34b05cd605dd45a29f572ef
   languageName: node
   linkType: hard
 
