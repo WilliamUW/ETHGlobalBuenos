@@ -1,16 +1,67 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Address } from "@scaffold-ui/components";
 import type { NextPage } from "next";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { BugAntIcon, MagnifyingGlassIcon, PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const { targetNetwork } = useTargetNetwork();
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileUpload = useCallback((file: File) => {
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        setUploadedImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert("Please upload an image file");
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        handleFileUpload(file);
+      }
+    },
+    [handleFileUpload],
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleFileUpload(file);
+      }
+    },
+    [handleFileUpload],
+  );
+
+  const clearImage = useCallback(() => {
+    setUploadedImage(null);
+  }, []);
 
   return (
     <>
@@ -31,7 +82,47 @@ const Home: NextPage = () => {
             />
           </div>
 
-          <p className="text-center text-lg">
+          {/* File Upload Dropbox */}
+          <div className="mt-8 flex flex-col items-center">
+            <h2 className="text-xl font-bold mb-4">Upload Photo</h2>
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              className={`relative border-2 border-dashed rounded-lg p-8 w-full max-w-md transition-all ${
+                isDragging ? "border-primary bg-primary/10" : "border-base-300 bg-base-200"
+              } hover:border-primary hover:bg-primary/5 cursor-pointer`}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileInputChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center justify-center text-center">
+                <PhotoIcon className="w-12 h-12 text-base-content/50 mb-3" />
+                <p className="text-base font-medium mb-1">Drop your image here or click to browse</p>
+                <p className="text-sm text-base-content/60">Supports: JPG, PNG, GIF, WebP</p>
+              </div>
+            </div>
+
+            {/* Image Preview */}
+            {uploadedImage && (
+              <div className="mt-6 w-full max-w-md">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">Preview</h3>
+                  <button onClick={clearImage} className="btn btn-circle btn-sm btn-ghost" aria-label="Clear image">
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="relative rounded-lg overflow-hidden border-2 border-base-300 shadow-lg">
+                  <img src={uploadedImage} alt="Uploaded preview" className="w-full h-auto object-contain max-h-96" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <p className="text-center text-lg mt-8">
             Get started by editing{" "}
             <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
               packages/nextjs/app/page.tsx
