@@ -1,16 +1,14 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Link from "next/link";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Address } from "@scaffold-ui/components";
 import { IDKitWidget, ISuccessResult, VerificationLevel } from "@worldcoin/idkit";
 import type { NextPage } from "next";
-import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon, PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { verify } from "~~/app/actions/verify";
-import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 type ReviewData = {
   platformName: string;
@@ -23,7 +21,6 @@ type ReviewData = {
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [extractedReview, setExtractedReview] = useState<ReviewData | null>(null);
@@ -178,171 +175,152 @@ Return ONLY the JSON object, no other text.`;
 
   return (
     <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
+      <div className="flex items-center flex-col grow pt-10 px-5">
+        {/* Header */}
+        <div className="max-w-2xl w-full">
+          <h1 className="text-center mb-8">
+            <span className="block text-4xl font-bold mb-2">Review Verifier</span>
+            <span className="block text-lg text-base-content/70">
+              Verify your identity and upload review screenshots
+            </span>
           </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address
-              address={connectedAddress}
-              chain={targetNetwork}
-              blockExplorerAddressLink={
-                targetNetwork.id === hardhat.id ? `/blockexplorer/address/${connectedAddress}` : undefined
-              }
-            />
-          </div>
 
-          {/* World ID Verification */}
-          <div className="mt-6 flex justify-center">
-            <IDKitWidget
-              app_id="app_4020275d788fc6f5664d986dd931e5e6"
-              action="verify"
-              signal="user_value"
-              onSuccess={onSuccess}
-              handleVerify={handleVerify}
-              verification_level={VerificationLevel.Device}
-            >
-              {({ open }) => (
-                <button onClick={open} className="btn btn-secondary">
-                  {isVerified ? "✅ You are verified!" : "Verify with World ID"}
-                </button>
-              )}
-            </IDKitWidget>
-          </div>
-
-          {/* File Upload Dropbox */}
-          <div className="mt-8 flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-4">Upload Photo</h2>
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              className={`relative border-2 border-dashed rounded-lg p-8 w-full max-w-md transition-all ${
-                isDragging ? "border-primary bg-primary/10" : "border-base-300 bg-base-200"
-              } hover:border-primary hover:bg-primary/5 cursor-pointer`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileInputChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <div className="flex flex-col items-center justify-center text-center">
-                <PhotoIcon className="w-12 h-12 text-base-content/50 mb-3" />
-                <p className="text-base font-medium mb-1">Drop your image here or click to browse</p>
-                <p className="text-sm text-base-content/60">Supports: JPG, PNG, GIF, WebP</p>
+          {/* Step 1: Connect Wallet */}
+          {!connectedAddress ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+              <div className="bg-base-200 rounded-2xl p-12 shadow-xl border-2 border-base-300 text-center max-w-md">
+                <div className="text-6xl mb-6">👋</div>
+                <h2 className="text-2xl font-bold mb-4">Welcome!</h2>
+                <p className="text-base-content/70 mb-6">
+                  Connect your wallet to get started with secure, verified reviews.
+                </p>
+                <p className="text-sm text-base-content/50">
+                  Click the button in the top right corner to connect
+                </p>
               </div>
             </div>
+          ) : !isVerified ? (
+            /* Step 2: Verify with World ID */
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+              <div className="bg-base-200 rounded-2xl p-12 shadow-xl border-2 border-base-300 text-center max-w-md">
+                <div className="text-6xl mb-6">🌍</div>
+                <h2 className="text-2xl font-bold mb-4">Verify Your Identity</h2>
+                <p className="text-base-content/70 mb-2">Connected as:</p>
+                <div className="mb-6">
+                  <Address address={connectedAddress} />
+                </div>
+                <p className="text-base-content/70 mb-6">
+                  Verify with World ID to ensure you're a unique human before submitting reviews.
+                </p>
+                <IDKitWidget
+                  app_id="app_4020275d788fc6f5664d986dd931e5e6"
+                  action="verify"
+                  signal="user_value"
+                  onSuccess={onSuccess}
+                  handleVerify={handleVerify}
+                  verification_level={VerificationLevel.Device}
+                >
+                  {({ open }) => (
+                    <button onClick={open} className="btn btn-primary btn-lg w-full">
+                      Verify with World ID
+                    </button>
+                  )}
+                </IDKitWidget>
+              </div>
+            </div>
+          ) : (
+            /* Step 3: Main Application - Upload and Submit Reviews */
+            <div className="space-y-8">
+              {/* Success Badge */}
+              <div className="bg-success/10 border-2 border-success rounded-xl p-4 text-center">
+                <p className="text-success font-semibold">
+                  ✅ Verified! You can now upload and submit reviews to the blockchain.
+                </p>
+              </div>
 
-            {/* Image Preview */}
-            {uploadedImage && (
-              <div className="mt-6 w-full max-w-md">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Preview</h3>
-                  <button onClick={clearImage} className="btn btn-circle btn-sm btn-ghost" aria-label="Clear image">
-                    <XMarkIcon className="w-5 h-5" />
+              {/* File Upload Section */}
+              <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
+                <h2 className="text-2xl font-bold mb-6 text-center">Upload Review Screenshot</h2>
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={`relative border-2 border-dashed rounded-xl p-12 transition-all ${
+                    isDragging ? "border-primary bg-primary/10" : "border-base-300"
+                  } hover:border-primary hover:bg-primary/5 cursor-pointer`}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileInputChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <PhotoIcon className="w-16 h-16 text-base-content/50 mb-4" />
+                    <p className="text-lg font-medium mb-2">Drop your review screenshot here</p>
+                    <p className="text-sm text-base-content/60">or click to browse</p>
+                    <p className="text-xs text-base-content/40 mt-2">Supports: JPG, PNG, GIF, WebP</p>
+                  </div>
+                </div>
+
+                {/* Image Preview */}
+                {uploadedImage && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold">Preview</h3>
+                      <button
+                        onClick={clearImage}
+                        className="btn btn-circle btn-sm btn-ghost"
+                        aria-label="Clear image"
+                      >
+                        <XMarkIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="relative rounded-xl overflow-hidden border-2 border-base-300 shadow-lg">
+                      <img src={uploadedImage} alt="Uploaded preview" className="w-full h-auto object-contain" />
+                    </div>
+                    <button onClick={handleGeminiTest} className="btn btn-primary w-full mt-4 btn-lg">
+                      Extract Review Data
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Extracted Review Data Preview */}
+              {extractedReview && (
+                <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
+                  <h3 className="text-2xl font-bold mb-6 text-center">Extracted Review Data</h3>
+                  <div className="space-y-4 mb-6">
+                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                      <span className="font-semibold">Platform:</span>
+                      <span className="text-right">{extractedReview.platformName}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                      <span className="font-semibold">Star Rating:</span>
+                      <span className="text-right text-lg">
+                        {"⭐".repeat(extractedReview.starRating)} ({extractedReview.starRating}/5)
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                      <span className="font-semibold">Number of Reviews:</span>
+                      <span className="text-right">{extractedReview.numberOfReviews}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                      <span className="font-semibold">Account Age:</span>
+                      <span className="text-right">{extractedReview.ageOfAccount} days</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
+                      <span className="font-semibold">Account Name:</span>
+                      <span className="text-right">{extractedReview.accountName}</span>
+                    </div>
+                  </div>
+                  <button onClick={handleWriteReview} className="btn btn-success w-full btn-lg">
+                    Submit Review to Blockchain
                   </button>
                 </div>
-                <div className="relative rounded-lg overflow-hidden border-2 border-base-300 shadow-lg">
-                  <img src={uploadedImage} alt="Uploaded preview" className="w-full h-auto object-contain max-h-96" />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Gemini Test Button */}
-          <div className="mt-6 flex justify-center">
-            <button onClick={handleGeminiTest} className="btn btn-primary">
-              Extract Review Data
-            </button>
-          </div>
-
-          {/* Extracted Review Data Preview */}
-          {extractedReview && (
-            <div className="mt-6 w-full max-w-md mx-auto">
-              <div className="bg-base-200 rounded-lg p-6 shadow-lg border-2 border-base-300">
-                <h3 className="text-xl font-bold mb-4 text-center">Extracted Review Information</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Platform:</span>
-                    <span className="text-right">{extractedReview.platformName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Star Rating:</span>
-                    <span className="text-right">
-                      {"⭐".repeat(extractedReview.starRating)} ({extractedReview.starRating}/5)
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Number of Reviews:</span>
-                    <span className="text-right">{extractedReview.numberOfReviews}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Account Age:</span>
-                    <span className="text-right">{extractedReview.ageOfAccount} days</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Account Name:</span>
-                    <span className="text-right">{extractedReview.accountName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Picture ID:</span>
-                    <span className="text-right">{extractedReview.pictureId}</span>
-                  </div>
-                </div>
-                <div className="mt-6 flex justify-center">
-                  <button onClick={handleWriteReview} className="btn btn-success w-full">
-                    Write Review to Blockchain
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           )}
-
-          <p className="text-center text-lg mt-8">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
-
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </>
