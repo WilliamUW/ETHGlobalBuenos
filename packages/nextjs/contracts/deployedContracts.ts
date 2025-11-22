@@ -26,39 +26,116 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
-              name: "greetingSetter",
+              name: "walletAddress",
               type: "address",
             },
             {
               indexed: false,
-              internalType: "string",
-              name: "newGreeting",
-              type: "string",
+              internalType: "uint256",
+              name: "reviewIndex",
+              type: "uint256",
             },
+          ],
+          name: "ReviewAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
             {
-              indexed: false,
-              internalType: "bool",
-              name: "premium",
-              type: "bool",
+              indexed: true,
+              internalType: "address",
+              name: "walletAddress",
+              type: "address",
             },
             {
               indexed: false,
               internalType: "uint256",
-              name: "value",
+              name: "count",
               type: "uint256",
             },
           ],
-          name: "GreetingChange",
+          name: "ReviewsDeleted",
           type: "event",
         },
         {
-          inputs: [],
-          name: "greeting",
+          inputs: [
+            {
+              internalType: "address",
+              name: "_walletAddress",
+              type: "address",
+            },
+          ],
+          name: "deleteReviews",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_walletAddress",
+              type: "address",
+            },
+          ],
+          name: "getReviewCount",
           outputs: [
             {
-              internalType: "string",
+              internalType: "uint256",
               name: "",
-              type: "string",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_walletAddress",
+              type: "address",
+            },
+          ],
+          name: "getReviews",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "string",
+                  name: "platformName",
+                  type: "string",
+                },
+                {
+                  internalType: "uint8",
+                  name: "starRating",
+                  type: "uint8",
+                },
+                {
+                  internalType: "uint256",
+                  name: "numberOfReviews",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "ageOfAccount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "accountName",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "pictureId",
+                  type: "string",
+                },
+              ],
+              internalType: "struct YourContract.Review[]",
+              name: "",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",
@@ -79,65 +156,50 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "premium",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "string",
-              name: "_newGreeting",
-              type: "string",
-            },
-          ],
-          name: "setGreeting",
+          name: "withdraw",
           outputs: [],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "totalCounter",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
             {
               internalType: "address",
-              name: "",
+              name: "_walletAddress",
               type: "address",
             },
-          ],
-          name: "userGreetingCounter",
-          outputs: [
+            {
+              internalType: "string",
+              name: "_platformName",
+              type: "string",
+            },
+            {
+              internalType: "uint8",
+              name: "_starRating",
+              type: "uint8",
+            },
             {
               internalType: "uint256",
-              name: "",
+              name: "_numberOfReviews",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "_ageOfAccount",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "_accountName",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_pictureId",
+              type: "string",
+            },
           ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "withdraw",
+          name: "writeReview",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",

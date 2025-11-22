@@ -8,20 +8,29 @@ import "hardhat/console.sol";
 // import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
+ * A smart contract that stores and manages reviews for wallet addresses
  * @author BuidlGuidl
  */
 contract YourContract {
     // State Variables
     address public immutable owner;
-    string public greeting = "Building Unstoppable Apps!!!";
-    bool public premium = false;
-    uint256 public totalCounter = 0;
-    mapping(address => uint) public userGreetingCounter;
+
+    // Review struct definition
+    struct Review {
+        string platformName;
+        uint8 starRating; // Rating out of 5
+        uint256 numberOfReviews;
+        uint256 ageOfAccount;
+        string accountName;
+        string pictureId;
+    }
+
+    // Mapping from wallet address to array of reviews
+    mapping(address => Review[]) private walletReviews;
 
     // Events: a way to emit log statements from smart contract that can be listened to by external parties
-    event GreetingChange(address indexed greetingSetter, string newGreeting, bool premium, uint256 value);
+    event ReviewAdded(address indexed walletAddress, uint256 reviewIndex);
+    event ReviewsDeleted(address indexed walletAddress, uint256 count);
 
     // Constructor: Called once on contract deployment
     // Check packages/hardhat/deploy/00_deploy_your_contract.ts
@@ -38,28 +47,80 @@ contract YourContract {
     }
 
     /**
-     * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
+     * Function that allows anyone to write a review for a wallet address
      *
-     * @param _newGreeting (string memory) - new greeting to save on the contract
+     * @param _walletAddress - the wallet address to write a review for
+     * @param _platformName - name of the platform
+     * @param _starRating - star rating out of 5
+     * @param _numberOfReviews - number of reviews
+     * @param _ageOfAccount - age of the account
+     * @param _accountName - account name
+     * @param _pictureId - picture ID
      */
-    function setGreeting(string memory _newGreeting) public payable {
-        // Print data to the hardhat chain console. Remove when deploying to a live network.
-        console.log("Setting new greeting '%s' from %s", _newGreeting, msg.sender);
+    function writeReview(
+        address _walletAddress,
+        string memory _platformName,
+        uint8 _starRating,
+        uint256 _numberOfReviews,
+        uint256 _ageOfAccount,
+        string memory _accountName,
+        string memory _pictureId
+    ) public {
+        require(_walletAddress != address(0), "Invalid wallet address");
+        require(_starRating <= 5, "Star rating must be between 0 and 5");
+        require(bytes(_platformName).length > 0, "Platform name cannot be empty");
 
-        // Change state variables
-        greeting = _newGreeting;
-        totalCounter += 1;
-        userGreetingCounter[msg.sender] += 1;
+        Review memory newReview = Review({
+            platformName: _platformName,
+            starRating: _starRating,
+            numberOfReviews: _numberOfReviews,
+            ageOfAccount: _ageOfAccount,
+            accountName: _accountName,
+            pictureId: _pictureId
+        });
 
-        // msg.value: built-in global variable that represents the amount of ether sent with the transaction
-        if (msg.value > 0) {
-            premium = true;
-        } else {
-            premium = false;
-        }
+        walletReviews[_walletAddress].push(newReview);
+        
+        console.log("Review added for wallet %s on platform %s", _walletAddress, _platformName);
+        
+        emit ReviewAdded(_walletAddress, walletReviews[_walletAddress].length - 1);
+    }
 
-        // emit: keyword used to trigger an event
-        emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
+    /**
+     * Function that returns all reviews for a given wallet address
+     *
+     * @param _walletAddress - the wallet address to get reviews for
+     * @return Review[] - array of all reviews for the wallet address
+     */
+    function getReviews(address _walletAddress) public view returns (Review[] memory) {
+        return walletReviews[_walletAddress];
+    }
+
+    /**
+     * Function that deletes all reviews for a given wallet address
+     * Can only be called by the wallet owner themselves
+     *
+     * @param _walletAddress - the wallet address to delete reviews for
+     */
+    function deleteReviews(address _walletAddress) public {
+        require(msg.sender == _walletAddress, "You can only delete your own reviews");
+        
+        uint256 reviewCount = walletReviews[_walletAddress].length;
+        delete walletReviews[_walletAddress];
+        
+        console.log("Deleted %s reviews for wallet %s", reviewCount, _walletAddress);
+        
+        emit ReviewsDeleted(_walletAddress, reviewCount);
+    }
+
+    /**
+     * Function that returns the number of reviews for a wallet address
+     *
+     * @param _walletAddress - the wallet address to check
+     * @return uint256 - number of reviews
+     */
+    function getReviewCount(address _walletAddress) public view returns (uint256) {
+        return walletReviews[_walletAddress].length;
     }
 
     /**
