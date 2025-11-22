@@ -18,7 +18,7 @@ contract YourContract {
     // Review struct definition
     struct Review {
         string platformName;
-        uint8 starRating; // Rating out of 5
+        uint16 starRating; // Rating out of 500 (5.00 stars), stored as integer with 2 decimal precision
         uint256 numberOfReviews;
         uint256 ageOfAccount;
         string accountName;
@@ -60,14 +60,14 @@ contract YourContract {
     function writeReview(
         address _walletAddress,
         string memory _platformName,
-        uint8 _starRating,
+        uint16 _starRating,
         uint256 _numberOfReviews,
         uint256 _ageOfAccount,
         string memory _accountName,
         string memory _pictureId
     ) public {
         require(_walletAddress != address(0), "Invalid wallet address");
-        require(_starRating <= 5, "Star rating must be between 0 and 5");
+        require(_starRating <= 500, "Star rating must be between 0 and 500 (representing 0.00 to 5.00)");
         require(bytes(_platformName).length > 0, "Platform name cannot be empty");
 
         Review memory newReview = Review({
