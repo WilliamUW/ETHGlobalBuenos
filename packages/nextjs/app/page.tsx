@@ -313,15 +313,44 @@ Return ONLY the JSON object, no other text.`;
                     </h2>
                     <p className="text-sm text-base-content/60 mt-1">Your cross-platform reputation</p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setShowMyReviews(!showMyReviews);
-                      if (!showMyReviews) refetchReviews();
-                    }}
-                    className="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    {showMyReviews ? "Hide Reviews" : "View My Reviews"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowMyReviews(!showMyReviews);
+                        if (!showMyReviews) refetchReviews();
+                      }}
+                      className="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      {showMyReviews ? "Hide Reviews" : "View My Reviews"}
+                    </button>
+                    {myReviews && myReviews.length > 0 && (
+                      <button
+                        onClick={async () => {
+                          if (
+                            window.confirm(
+                              `Are you sure you want to delete all ${myReviews.length} review${myReviews.length !== 1 ? "s" : ""}? This action cannot be undone.`,
+                            )
+                          ) {
+                            try {
+                              await writeYourContractAsync({
+                                functionName: "deleteReviews",
+                                args: [connectedAddress],
+                              });
+                              alert("All reviews successfully deleted from blockchain!");
+                              refetchReviews();
+                              setShowMyReviews(false);
+                            } catch (error) {
+                              console.error("Error deleting reviews:", error);
+                              alert("Failed to delete reviews. Please try again.");
+                            }
+                          }
+                        }}
+                        className="btn btn-error shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      >
+                        🗑️ Delete All
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {showMyReviews && (
