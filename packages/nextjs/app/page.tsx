@@ -189,77 +189,136 @@ Return ONLY the JSON object, no other text.`;
 
   return (
     <>
-      <div className="flex items-center flex-col grow pt-10 px-5">
-        {/* Header */}
-        <div className="max-w-2xl w-full">
-          <h1 className="text-center mb-8">
-            <span className="block text-4xl font-bold mb-2">Review Verifier</span>
-            <span className="block text-lg text-base-content/70">
-              Verify your identity and upload review screenshots
-            </span>
-          </h1>
+      <div className="flex items-center flex-col grow pt-8 px-4 pb-12">
+        {/* Hero Header */}
+        <div className="max-w-3xl w-full mb-10">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 mb-4">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </span>
+              <span className="text-sm font-medium">Blockchain-Powered Reputation</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight">
+              ReviewSync
+            </h1>
+            <p className="text-xl md:text-2xl font-semibold text-base-content/80">
+              Never Start From Zero Again
+            </p>
+            <p className="text-base md:text-lg text-base-content/60 max-w-2xl mx-auto leading-relaxed">
+              Import your reviews from platforms like Uber, Lyft, and Airbnb onto the blockchain. Join new platforms
+              with your proven reputation intact.
+            </p>
+          </div>
+        </div>
 
+        <div className="max-w-2xl w-full">
           {/* Step 1: Connect Wallet */}
           {!connectedAddress ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-              <div className="bg-base-200 rounded-2xl p-12 shadow-xl border-2 border-base-300 text-center max-w-md">
-                <div className="text-6xl mb-6">👋</div>
-                <h2 className="text-2xl font-bold mb-4">Welcome!</h2>
-                <p className="text-base-content/70 mb-6">
-                  Connect your wallet to get started with secure, verified reviews.
-                </p>
-                <p className="text-sm text-base-content/50">Click the button in the top right corner to connect</p>
+            <div className="flex flex-col items-center justify-center min-h-[450px]">
+              <div className="relative bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-12 shadow-2xl border border-base-300/50 text-center max-w-lg backdrop-blur-sm">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                  👋
+                </div>
+                <div className="mt-6">
+                  <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    Welcome to ReviewSync!
+                  </h2>
+                  <p className="text-base-content/70 mb-8 text-lg leading-relaxed">
+                    Connect your wallet to start building your cross-platform reputation on the blockchain.
+                  </p>
+                  <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 mb-6">
+                    <p className="text-sm text-base-content/70 leading-relaxed">
+                      <span className="font-semibold text-primary">💡 Pro tip:</span> Click the connect button in the
+                      top right corner to get started
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="bg-base-100/50 rounded-xl p-3">
+                      <div className="text-2xl mb-1">🔒</div>
+                      <div className="text-xs text-base-content/60">Secure</div>
+                    </div>
+                    <div className="bg-base-100/50 rounded-xl p-3">
+                      <div className="text-2xl mb-1">⚡</div>
+                      <div className="text-xs text-base-content/60">Fast</div>
+                    </div>
+                    <div className="bg-base-100/50 rounded-xl p-3">
+                      <div className="text-2xl mb-1">🌐</div>
+                      <div className="text-xs text-base-content/60">Universal</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : !isVerified ? (
             /* Step 2: Verify with World ID */
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-              <div className="bg-base-200 rounded-2xl p-12 shadow-xl border-2 border-base-300 text-center max-w-md">
-                <div className="text-6xl mb-6">🌍</div>
-                <h2 className="text-2xl font-bold mb-4">Verify Your Identity</h2>
-                <p className="text-base-content/70 mb-2">Connected as:</p>
-                <div className="mb-6">
-                  <Address address={connectedAddress} />
+            <div className="flex flex-col items-center justify-center min-h-[450px]">
+              <div className="relative bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-12 shadow-2xl border border-base-300/50 text-center max-w-lg backdrop-blur-sm">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                  🌍
                 </div>
-                <p className="text-base-content/70 mb-6">
-                  Verify with World ID to ensure you&apos;re a unique human before submitting reviews.
-                </p>
-                <IDKitWidget
-                  app_id="app_4020275d788fc6f5664d986dd931e5e6"
-                  action="verify"
-                  signal="user_value"
-                  onSuccess={onSuccess}
-                  handleVerify={handleVerify}
-                  verification_level={VerificationLevel.Device}
-                >
-                  {({ open }: { open: () => void }) => (
-                    <button onClick={open} className="btn btn-primary btn-lg w-full">
-                      Verify with World ID
-                    </button>
-                  )}
-                </IDKitWidget>
+                <div className="mt-6">
+                  <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    Verify Your Identity
+                  </h2>
+                  <div className="bg-success/10 border border-success/30 rounded-2xl p-4 mb-6">
+                    <p className="text-sm text-base-content/70 mb-2">✅ Wallet Connected</p>
+                    <div className="flex justify-center">
+                      <Address address={connectedAddress} />
+                    </div>
+                  </div>
+                  <p className="text-base-content/70 mb-8 text-lg leading-relaxed">
+                    Verify with World ID to prove you&apos;re a unique human before submitting reviews to the blockchain.
+                  </p>
+                  <IDKitWidget
+                    app_id="app_4020275d788fc6f5664d986dd931e5e6"
+                    action="verify"
+                    signal="user_value"
+                    onSuccess={onSuccess}
+                    handleVerify={handleVerify}
+                    verification_level={VerificationLevel.Device}
+                  >
+                    {({ open }: { open: () => void }) => (
+                      <button
+                        onClick={open}
+                        className="btn btn-primary btn-lg w-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      >
+                        <span className="mr-2">🌐</span>
+                        Verify with World ID
+                      </button>
+                    )}
+                  </IDKitWidget>
+                  <p className="text-xs text-base-content/50 mt-4">🔒 Your privacy is protected</p>
+                </div>
               </div>
             </div>
           ) : (
             /* Step 3: Main Application - Upload and Submit Reviews */
-            <div className="space-y-8">
+            <div className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Success Badge */}
-              <div className="bg-success/10 border-2 border-success rounded-xl p-4 text-center">
-                <p className="text-success font-semibold">
-                  ✅ Verified! You can now upload and submit reviews to the blockchain.
+              <div className="bg-gradient-to-r from-success/20 to-success/10 border border-success/40 rounded-2xl p-5 text-center shadow-lg backdrop-blur-sm">
+                <p className="text-success font-semibold text-lg flex items-center justify-center gap-2">
+                  <span className="text-2xl">✅</span>
+                  <span>Verified! You can now upload and submit reviews to the blockchain.</span>
                 </p>
               </div>
 
               {/* My Reviews Section */}
-              <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold">My Reviews</h2>
+              <div className="bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-8 shadow-2xl border border-base-300/50 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      📊 My Reviews
+                    </h2>
+                    <p className="text-sm text-base-content/60 mt-1">Your cross-platform reputation</p>
+                  </div>
                   <button
                     onClick={() => {
                       setShowMyReviews(!showMyReviews);
                       if (!showMyReviews) refetchReviews();
                     }}
-                    className="btn btn-primary"
+                    className="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     {showMyReviews ? "Hide Reviews" : "View My Reviews"}
                   </button>
@@ -275,77 +334,105 @@ Return ONLY the JSON object, no other text.`;
                         </div>
 
                         {/* Summary Statistics */}
-                        <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl p-6 border-2 border-primary/20 mb-6">
-                          <h3 className="text-lg font-bold mb-4 text-center">Summary Statistics</h3>
+                        <div className="bg-gradient-to-br from-primary/15 to-secondary/15 rounded-2xl p-8 border border-primary/30 mb-6 shadow-xl">
+                          <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            ✨ Summary Statistics
+                          </h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-base-100 rounded-lg p-4 text-center">
-                              <div className="text-3xl font-bold text-primary">
+                            <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-primary/20 hover:scale-105 transition-transform duration-300">
+                              <div className="text-4xl font-black text-primary mb-2">
                                 {(
                                   myReviews.reduce((sum: number, r: any) => sum + Number(r.starRating), 0) /
                                   myReviews.length /
                                   100
                                 ).toFixed(2)}
                               </div>
-                              <div className="text-xs text-base-content/60 mt-1">Average Stars</div>
+                              <div className="text-xs font-semibold text-base-content/70 uppercase tracking-wide">
+                                Average Stars
+                              </div>
+                              <div className="text-2xl mt-2">⭐</div>
                             </div>
-                            <div className="bg-base-100 rounded-lg p-4 text-center">
-                              <div className="text-3xl font-bold text-secondary">
+                            <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-secondary/20 hover:scale-105 transition-transform duration-300">
+                              <div className="text-4xl font-black text-secondary mb-2">
                                 {myReviews
                                   .reduce((sum: number, r: any) => sum + Number(r.numberOfReviews), 0)
                                   .toLocaleString()}
                               </div>
-                              <div className="text-xs text-base-content/60 mt-1">Total Reviews</div>
+                              <div className="text-xs font-semibold text-base-content/70 uppercase tracking-wide">
+                                Total Reviews
+                              </div>
+                              <div className="text-2xl mt-2">📝</div>
                             </div>
-                            <div className="bg-base-100 rounded-lg p-4 text-center">
-                              <div className="text-3xl font-bold text-accent">
+                            <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-accent/20 hover:scale-105 transition-transform duration-300">
+                              <div className="text-4xl font-black text-accent mb-2">
                                 {new Set(myReviews.map((r: any) => r.platformName)).size}
                               </div>
-                              <div className="text-xs text-base-content/60 mt-1">Platforms</div>
+                              <div className="text-xs font-semibold text-base-content/70 uppercase tracking-wide">
+                                Platforms
+                              </div>
+                              <div className="text-2xl mt-2">🌐</div>
                             </div>
-                            <div className="bg-base-100 rounded-lg p-4 text-center">
-                              <div className="text-3xl font-bold text-info">
+                            <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-info/20 hover:scale-105 transition-transform duration-300">
+                              <div className="text-4xl font-black text-info mb-2">
                                 {Math.max(...myReviews.map((r: any) => Number(r.ageOfAccount)))}
                               </div>
-                              <div className="text-xs text-base-content/60 mt-1">Oldest Account (days)</div>
+                              <div className="text-xs font-semibold text-base-content/70 uppercase tracking-wide">
+                                Oldest Account
+                              </div>
+                              <div className="text-2xl mt-2">⏰</div>
                             </div>
                           </div>
                         </div>
 
                         {myReviews.map((review: any, index: number) => (
-                          <div key={index} className="bg-base-100 rounded-xl p-6 border-2 border-base-300">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-xl font-bold">{review.platformName}</h3>
-                                <p className="text-sm text-base-content/60">{review.accountName}</p>
+                          <div
+                            key={index}
+                            className="bg-base-100/50 backdrop-blur-sm rounded-2xl p-6 border border-base-300/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                          >
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xl">
+                                    {review.platformName.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <h3 className="text-xl font-bold">{review.platformName}</h3>
+                                    <p className="text-sm text-base-content/60">@{review.accountName}</p>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-right">
-                                <div className="text-2xl mb-1">
+                              <div className="text-right bg-gradient-to-br from-warning/10 to-warning/5 px-4 py-3 rounded-xl border border-warning/20">
+                                <div className="text-3xl mb-1">
                                   {"⭐".repeat(Math.floor(Number(review.starRating) / 100))}
                                 </div>
-                                <div className="text-sm font-semibold">
+                                <div className="text-lg font-bold text-warning">
                                   {(Number(review.starRating) / 100).toFixed(2)}/5.00
                                 </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="flex justify-between p-2 bg-base-200 rounded">
-                                <span className="font-semibold">Total Reviews:</span>
-                                <span>{review.numberOfReviews.toString()}</span>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
+                                <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
+                                  Total Reviews
+                                </span>
+                                <span className="text-lg font-bold">{review.numberOfReviews.toString()}</span>
                               </div>
-                              <div className="flex justify-between p-2 bg-base-200 rounded">
-                                <span className="font-semibold">Account Age:</span>
-                                <span>{review.ageOfAccount.toString()} days</span>
+                              <div className="bg-base-200/50 backdrop-blur-sm p-4 rounded-xl border border-base-300/30">
+                                <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide block mb-1">
+                                  Account Age
+                                </span>
+                                <span className="text-lg font-bold">{review.ageOfAccount.toString()} days</span>
                               </div>
                             </div>
                           </div>
                         ))}
                       </>
                     ) : (
-                      <div className="text-center py-12">
-                        <div className="text-6xl mb-4">📝</div>
-                        <p className="text-lg text-base-content/70">No reviews found for your address</p>
-                        <p className="text-sm text-base-content/50 mt-2">
-                          Upload a screenshot to add your first review!
+                      <div className="text-center py-16 bg-base-100/30 rounded-2xl border border-dashed border-base-300">
+                        <div className="text-7xl mb-4">📝</div>
+                        <p className="text-xl font-semibold text-base-content/80 mb-2">No reviews found</p>
+                        <p className="text-base text-base-content/60">
+                          Upload a screenshot below to add your first review!
                         </p>
                       </div>
                     )}
@@ -354,15 +441,24 @@ Return ONLY the JSON object, no other text.`;
               </div>
 
               {/* File Upload Section */}
-              <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
-                <h2 className="text-2xl font-bold mb-6 text-center">Upload Review Screenshot</h2>
+              <div className="bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-8 shadow-2xl border border-base-300/50 backdrop-blur-sm">
+                <div className="text-center mb-6">
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    📸 Upload Review Screenshot
+                  </h2>
+                  <p className="text-sm text-base-content/60 mt-2">
+                    From Uber, Lyft, Airbnb, or any other platform
+                  </p>
+                </div>
                 <div
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
-                  className={`relative border-2 border-dashed rounded-xl p-12 transition-all ${
-                    isDragging ? "border-primary bg-primary/10" : "border-base-300"
-                  } hover:border-primary hover:bg-primary/5 cursor-pointer`}
+                  className={`relative border-2 border-dashed rounded-2xl p-12 transition-all duration-300 ${
+                    isDragging
+                      ? "border-primary bg-gradient-to-br from-primary/20 to-secondary/20 scale-105"
+                      : "border-base-300 hover:border-primary hover:bg-primary/5"
+                  } cursor-pointer group`}
                 >
                   <input
                     type="file"
@@ -371,28 +467,43 @@ Return ONLY the JSON object, no other text.`;
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   <div className="flex flex-col items-center justify-center text-center">
-                    <PhotoIcon className="w-16 h-16 text-base-content/50 mb-4" />
-                    <p className="text-lg font-medium mb-2">Drop your review screenshot here</p>
-                    <p className="text-sm text-base-content/60">or click to browse</p>
-                    <p className="text-xs text-base-content/40 mt-2">Supports: JPG, PNG, GIF, WebP</p>
+                    <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <PhotoIcon className="w-12 h-12 text-white" />
+                    </div>
+                    <p className="text-xl font-semibold mb-2">Drop your review screenshot here</p>
+                    <p className="text-base text-base-content/60 mb-4">or click to browse your files</p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-base-100/50 rounded-xl border border-base-300/30">
+                      <span className="text-xs text-base-content/50">📄 Supports: JPG, PNG, GIF, WebP</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Image Preview */}
                 {uploadedImage && (
-                  <div className="mt-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold">Preview</h3>
-                      <button onClick={clearImage} className="btn btn-circle btn-sm btn-ghost" aria-label="Clear image">
+                  <div className="mt-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold flex items-center gap-2">
+                        <span>🖼️</span>
+                        <span>Preview</span>
+                      </h3>
+                      <button
+                        onClick={clearImage}
+                        className="btn btn-circle btn-sm btn-ghost hover:bg-error/20 hover:text-error transition-colors"
+                        aria-label="Clear image"
+                      >
                         <XMarkIcon className="w-5 h-5" />
                       </button>
                     </div>
-                    <div className="relative rounded-xl overflow-hidden border-2 border-base-300 shadow-lg">
+                    <div className="relative rounded-2xl overflow-hidden border border-base-300/50 shadow-xl bg-base-100">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={uploadedImage} alt="Uploaded preview" className="w-full h-auto object-contain" />
                     </div>
-                    <button onClick={handleGeminiTest} className="btn btn-primary w-full mt-4 btn-lg">
-                      Extract Review Data
+                    <button
+                      onClick={handleGeminiTest}
+                      className="btn btn-primary w-full btn-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                    >
+                      <span className="mr-2">🤖</span>
+                      Extract Review Data with AI
                     </button>
                   </div>
                 )}
@@ -400,35 +511,54 @@ Return ONLY the JSON object, no other text.`;
 
               {/* Extracted Review Data Preview */}
               {extractedReview && (
-                <div className="bg-base-200 rounded-2xl p-8 shadow-xl border-2 border-base-300">
-                  <h3 className="text-2xl font-bold mb-6 text-center">Extracted Review Data</h3>
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                      <span className="font-semibold">Platform:</span>
-                      <span className="text-right">{extractedReview.platformName}</span>
+                <div className="bg-gradient-to-br from-base-100 to-base-200 rounded-3xl p-8 shadow-2xl border border-base-300/50 backdrop-blur-sm">
+                  <div className="text-center mb-8">
+                    <h3 className="text-3xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent flex items-center justify-center gap-2">
+                      <span>✅</span>
+                      <span>Extracted Review Data</span>
+                    </h3>
+                    <p className="text-sm text-base-content/60 mt-2">Verify the information before submitting</p>
+                  </div>
+                  <div className="space-y-3 mb-8">
+                    <div className="flex justify-between items-center p-4 bg-base-100/50 backdrop-blur-sm rounded-2xl border border-base-300/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>🏢</span> Platform:
+                      </span>
+                      <span className="text-right font-bold">{extractedReview.platformName}</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                      <span className="font-semibold">Star Rating:</span>
-                      <span className="text-right text-lg">
-                        {"⭐".repeat(Math.floor(extractedReview.starRating))} ({extractedReview.starRating.toFixed(2)}
-                        /5.00)
+                    <div className="flex justify-between items-center p-4 bg-gradient-to-br from-warning/10 to-warning/5 rounded-2xl border border-warning/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>⭐</span> Star Rating:
+                      </span>
+                      <span className="text-right text-xl font-bold">
+                        {"⭐".repeat(Math.floor(extractedReview.starRating))} ({extractedReview.starRating.toFixed(2)}/5.00)
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                      <span className="font-semibold">Number of Reviews:</span>
-                      <span className="text-right">{extractedReview.numberOfReviews}</span>
+                    <div className="flex justify-between items-center p-4 bg-base-100/50 backdrop-blur-sm rounded-2xl border border-base-300/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>📝</span> Number of Reviews:
+                      </span>
+                      <span className="text-right font-bold">{extractedReview.numberOfReviews.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                      <span className="font-semibold">Account Age:</span>
-                      <span className="text-right">{extractedReview.ageOfAccount} days</span>
+                    <div className="flex justify-between items-center p-4 bg-base-100/50 backdrop-blur-sm rounded-2xl border border-base-300/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>⏰</span> Account Age:
+                      </span>
+                      <span className="text-right font-bold">{extractedReview.ageOfAccount} days</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-base-100 rounded-lg">
-                      <span className="font-semibold">Account Name:</span>
-                      <span className="text-right">{extractedReview.accountName}</span>
+                    <div className="flex justify-between items-center p-4 bg-base-100/50 backdrop-blur-sm rounded-2xl border border-base-300/30 hover:scale-[1.02] transition-transform">
+                      <span className="font-semibold text-base-content/70 flex items-center gap-2">
+                        <span>👤</span> Account Name:
+                      </span>
+                      <span className="text-right font-bold">@{extractedReview.accountName}</span>
                     </div>
                   </div>
-                  <button onClick={handleWriteReview} className="btn btn-success w-full btn-lg">
-                    Submit Review to Blockchain
+                  <button
+                    onClick={handleWriteReview}
+                    className="btn btn-success w-full btn-lg text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                  >
+                    <span className="mr-2">⛓️</span>
+                    Submit to Blockchain
                   </button>
                 </div>
               )}
