@@ -8,13 +8,24 @@ import type { NextPage } from "next";
 import { hardhat } from "viem/chains";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon, PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
+
+type ReviewData = {
+  platformName: string;
+  starRating: number;
+  numberOfReviews: number;
+  ageOfAccount: number;
+  accountName: string;
+  pictureId: string;
+};
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [extractedReview, setExtractedReview] = useState<ReviewData | null>(null);
+  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract({ contractName: "YourContract" });
 
   const handleFileUpload = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -62,7 +73,33 @@ const Home: NextPage = () => {
 
   const clearImage = useCallback(() => {
     setUploadedImage(null);
+    setExtractedReview(null);
   }, []);
+
+  const handleWriteReview = async () => {
+    if (!extractedReview || !connectedAddress) {
+      alert("Please extract review data first and connect your wallet!");
+      return;
+    }
+
+    try {
+      await writeYourContractAsync({
+        functionName: "writeReview",
+        args: [
+          connectedAddress,
+          extractedReview.platformName,
+          extractedReview.starRating,
+          BigInt(extractedReview.numberOfReviews),
+          BigInt(extractedReview.ageOfAccount),
+          extractedReview.accountName,
+          extractedReview.pictureId,
+        ],
+      });
+      alert("Review successfully written to blockchain!");
+    } catch (error) {
+      console.error("Error writing review:", error);
+    }
+  };
 
   const handleGeminiTest = async () => {
     if (!uploadedImage) {
@@ -108,8 +145,9 @@ Return ONLY the JSON object, no other text.`;
       try {
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const extractedData = JSON.parse(jsonMatch[0]);
+          const extractedData = JSON.parse(jsonMatch[0]) as ReviewData;
           console.log("Extracted Review Data:", extractedData);
+          setExtractedReview(extractedData);
         } else {
           console.log("No JSON found in response");
         }
@@ -184,9 +222,51 @@ Return ONLY the JSON object, no other text.`;
           {/* Gemini Test Button */}
           <div className="mt-6 flex justify-center">
             <button onClick={handleGeminiTest} className="btn btn-primary">
-              Test Gemini AI
+              Extract Review Data
             </button>
           </div>
+
+          {/* Extracted Review Data Preview */}
+          {extractedReview && (
+            <div className="mt-6 w-full max-w-md mx-auto">
+              <div className="bg-base-200 rounded-lg p-6 shadow-lg border-2 border-base-300">
+                <h3 className="text-xl font-bold mb-4 text-center">Extracted Review Information</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Platform:</span>
+                    <span className="text-right">{extractedReview.platformName}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Star Rating:</span>
+                    <span className="text-right">
+                      {"⭐".repeat(extractedReview.starRating)} ({extractedReview.starRating}/5)
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Number of Reviews:</span>
+                    <span className="text-right">{extractedReview.numberOfReviews}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Account Age:</span>
+                    <span className="text-right">{extractedReview.ageOfAccount} days</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Account Name:</span>
+                    <span className="text-right">{extractedReview.accountName}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Picture ID:</span>
+                    <span className="text-right">{extractedReview.pictureId}</span>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-center">
+                  <button onClick={handleWriteReview} className="btn btn-success w-full">
+                    Write Review to Blockchain
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <p className="text-center text-lg mt-8">
             Get started by editing{" "}
