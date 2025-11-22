@@ -29,7 +29,7 @@ export async function POST() {
 
     // 2) Fund & approve (single tx)
     console.log("Depositing USDFC and approving operator...");
-    const depositAmount = ethers.parseUnits("2.5", 18);
+    const depositAmount = ethers.parseUnits("0.001", 18);
     const tx = await synapse.payments.depositWithPermitAndApproveOperator(
       depositAmount, // 2.5 USDFC (covers 1TiB of storage for 30 days)
       synapse.getWarmStorageAddress(),
@@ -43,7 +43,7 @@ export async function POST() {
     // 3) Upload
     console.log("Uploading data to Filecoin...");
     const data = new TextEncoder().encode(
-      `🚀 Welcome to decentralized storage on Filecoin Onchain Cloud!
+      `sdjkhskj heloooo 🚀 Welcome to decentralized storage on Filecoin Onchain Cloud!
     Your data is safe here.
     🌍 You need to make sure to meet the minimum size
     requirement of 127 bytes per upload.`,
