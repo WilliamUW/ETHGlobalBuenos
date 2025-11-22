@@ -204,10 +204,16 @@ const Home: NextPage = () => {
         }
 
         console.log("✅ Image uploaded to Filecoin!");
-        console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
+        console.log(`📦 PieceCID:`, uploadData.pieceCid);
         console.log(`📏 Size: ${uploadData.size} bytes`);
         
-        pieceCid = uploadData.pieceCid;
+        // Extract CID string from IPLD format if needed
+        if (typeof uploadData.pieceCid === 'object' && uploadData.pieceCid['/']) {
+          pieceCid = uploadData.pieceCid['/'];
+        } else {
+          pieceCid = uploadData.pieceCid;
+        }
+        console.log(`📦 Extracted PieceCID string: ${pieceCid}`);
       } else {
         console.log("⏭️ Filecoin upload disabled, skipping...");
       }
@@ -251,9 +257,16 @@ Return ONLY the JSON object, no other text.`;
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const extractedData = JSON.parse(jsonMatch[0]) as ReviewData;
-          console.log("Extracted Review Data:", extractedData);
+          console.log("Extracted Review Data (raw):", extractedData);
+          
+          // Handle IPLD CID format if present (convert {"/": "bafk..."} to "bafk...")
+          if (extractedData.pictureId && typeof extractedData.pictureId === 'object' && (extractedData.pictureId as any)['/']) {
+            extractedData.pictureId = (extractedData.pictureId as any)['/'];
+          }
+          
           // Store the pieceCID (or placeholder) in the extracted data
           extractedData.pictureId = pieceCid;
+          console.log("Extracted Review Data (final):", extractedData);
           setExtractedReview(extractedData);
         } else {
           console.log("No JSON found in response");
