@@ -31,18 +31,25 @@ export async function POST(request: Request) {
     });
     console.log("✅ Synapse SDK initialized");
 
-    // 2) Fund & approve (single tx)
-    console.log("Depositing USDFC and approving operator...");
+    // 2) Check balance and only deposit if needed
+    console.log("Checking USDFC balance...");
+    const balance = await synapse.payments.balance();
     const depositAmount = ethers.parseUnits("0.001", 18);
-    const tx = await synapse.payments.depositWithPermitAndApproveOperator(
-      depositAmount, // 2.5 USDFC (covers 1TiB of storage for 30 days)
-      synapse.getWarmStorageAddress(),
-      ethers.MaxUint256,
-      ethers.MaxUint256,
-      TIME_CONSTANTS.EPOCHS_PER_MONTH,
-    );
-    await tx.wait();
-    console.log("✅ USDFC deposit and Warm Storage service approval successful!");
+    
+    if (balance < depositAmount) {
+      console.log("Insufficient balance, depositing USDFC and approving operator...");
+      const tx = await synapse.payments.depositWithPermitAndApproveOperator(
+        depositAmount,
+        synapse.getWarmStorageAddress(),
+        ethers.MaxUint256,
+        ethers.MaxUint256,
+        TIME_CONSTANTS.EPOCHS_PER_MONTH,
+      );
+      await tx.wait();
+      console.log("✅ USDFC deposit and Warm Storage service approval successful!");
+    } else {
+      console.log("✅ Sufficient balance already available, skipping deposit");
+    }
 
     // 3) Upload
     console.log("Uploading data to Filecoin...");
@@ -72,21 +79,19 @@ export async function POST(request: Request) {
     console.log(`Size: ${size} bytes`);
     console.log(`Data: ${dataDescription}`);
 
-    // 4) Download
-    console.log("Downloading data from Filecoin...");
-    const bytes = await synapse.storage.download(pieceCid);
-    const decodedText = new TextDecoder().decode(bytes);
-    console.log("✅ Download successful!");
-    console.log(`Downloaded data preview: ${decodedText.substring(0, 100)}...`);
+    console.log("🎉 Data storage successful!");
 
-    console.log("🎉 Data storage and retrieval successful!");
+    // Skip download to speed up the process - we can retrieve it later if needed
+    // console.log("Downloading data from Filecoin...");
+    // const bytes = await synapse.storage.download(pieceCid);
+    // const decodedText = new TextDecoder().decode(bytes);
+    // console.log("✅ Download successful!");
 
     // Return success response
     return NextResponse.json({
       success: true,
       pieceCid,
       size,
-      downloadedDataPreview: decodedText.substring(0, 100),
       message: "Storage workflow completed successfully!",
     });
   } catch (error: any) {

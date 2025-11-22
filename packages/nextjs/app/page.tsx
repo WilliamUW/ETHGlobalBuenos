@@ -37,6 +37,41 @@ const Home: NextPage = () => {
     args: [connectedAddress],
   });
 
+  // Helper function to compress image
+  const compressImage = (dataUrl: string, maxWidth: number = 800, quality: number = 0.7): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to JPEG with specified quality for better compression
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  };
+
   const onSuccess = () => {
     setIsVerified(true);
   };
@@ -136,33 +171,44 @@ const Home: NextPage = () => {
     }
 
     try {
+      // Compress image before uploading to Filecoin
+      console.log("🗜️ Compressing image...");
+      const compressedImage = await compressImage(uploadedImage, 800, 0.7);
+      const originalSize = uploadedImage.length;
+      const compressedSize = compressedImage.length;
+      console.log(`Original size: ${(originalSize / 1024).toFixed(2)} KB`);
+      console.log(`Compressed size: ${(compressedSize / 1024).toFixed(2)} KB`);
+      console.log(`Compression ratio: ${((1 - compressedSize / originalSize) * 100).toFixed(1)}%`);
+
       // Extract base64 data and mime type from data URL
-      const [header, base64] = uploadedImage.split(",");
+      const [header, base64] = compressedImage.split(",");
       const mimeType = header.match(/:(.*?);/)?.[1] || "image/jpeg";
 
-      if (false) {
-        // Upload image to Filecoin as base64 string
-        console.log("📤 Uploading image to Filecoin...");
-        const uploadResponse = await fetch("/api/synapse/storage", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            imageBase64: uploadedImage, // Send the full data URL (includes mime type + base64)
-          }),
-        });
+      // Upload compressed image to Filecoin as base64 string
+      console.log("📤 Uploading compressed image to Filecoin...");
+      const uploadResponse = await fetch("/api/synapse/storage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageBase64: compressedImage, // Send the compressed data URL
+        }),
+      });
 
-        const uploadData = await uploadResponse.json();
+      const uploadData = await uploadResponse.json();
 
-        if (!uploadResponse.ok) {
-          throw new Error(uploadData.error || "Failed to upload to Filecoin");
-        }
-
-        console.log("✅ Image uploaded to Filecoin!");
-        console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
-        console.log(`📏 Size: ${uploadData.size} bytes`);
+      if (!uploadResponse.ok) {
+        throw new Error(uploadData.error || "Failed to upload to Filecoin");
       }
+
+      console.log("✅ Image uploaded to Filecoin!");
+      console.log(`📦 PieceCID: ${uploadData.pieceCid}`);
+      console.log(`📏 Size: ${uploadData.size} bytes`);
+
+      // Use original (uncompressed) image for AI extraction to get better quality results
+      const [, originalBase64] = uploadedImage.split(",");
+      const originalMimeType = uploadedImage.match(/:(.*?);/)?.[1] || "image/jpeg";
 
       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -173,7 +219,7 @@ const Home: NextPage = () => {
   "starRating": decimal number from 0.00 to 5.00 (e.g., 4.89, 5.00, 3.75),
   "numberOfReviews": total number of reviews,
   "ageOfAccount": age of account in days/months/years (convert to a number representing days),
-  "accountName": username or account name,
+  "accountName": username or account name",
   "pictureId": use "placeholderPictureId" for now
 }
 
@@ -185,8 +231,8 @@ Return ONLY the JSON object, no other text.`;
       const result = await model.generateContent([
         {
           inlineData: {
-            mimeType: mimeType,
-            data: base64,
+            mimeType: originalMimeType,
+            data: originalBase64,
           },
         },
         { text: prompt },
@@ -201,7 +247,7 @@ Return ONLY the JSON object, no other text.`;
           const extractedData = JSON.parse(jsonMatch[0]) as ReviewData;
           console.log("Extracted Review Data:", extractedData);
           // Store the pieceCID in the extracted data for later use
-          // extractedData.pictureId = uploadData.pieceCid;
+          extractedData.pictureId = uploadData.pieceCid;
           setExtractedReview(extractedData);
         } else {
           console.log("No JSON found in response");
@@ -211,7 +257,7 @@ Return ONLY the JSON object, no other text.`;
         console.log("Response text:", responseText);
       }
     } catch (error) {
-      console.error("Gemini API error:", error);
+      console.error("Error:", error);
       alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
