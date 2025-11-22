@@ -215,6 +215,41 @@ Return ONLY the JSON object, no other text.`;
     }
   };
 
+  const handleSynapseStorage = async () => {
+    try {
+      console.log("🚀 Starting Synapse Storage workflow...");
+      console.log("📡 Calling backend API...");
+
+      // Call the backend API endpoint
+      const response = await fetch("/api/synapse/storage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to complete storage workflow");
+      }
+
+      console.log("✅ API Response:", data);
+      console.log(`PieceCID: ${data.pieceCid}`);
+      console.log(`Size: ${data.size} bytes`);
+      console.log(`Downloaded data: ${data.downloadedData}`);
+      console.log("🎉 Data storage and retrieval successful!");
+
+      alert(
+        `✅ Synapse Storage Complete!\n\nPieceCID: ${data.pieceCid}\nSize: ${data.size} bytes\n\nCheck console for full details!`,
+      );
+    } catch (error: any) {
+      console.error("❌ Error occurred:");
+      console.error(error.message);
+      alert(`❌ Synapse Storage Failed!\n\n${error.message}\n\nCheck console for details.`);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center flex-col grow pt-8 px-4 pb-12">
@@ -645,25 +680,53 @@ Return ONLY the JSON object, no other text.`;
             {/* Collapsible Panel Content */}
             {showDebugPanel && (
               <div className="bg-gradient-to-br from-base-200/95 to-base-300/95 backdrop-blur-md border-t border-x border-base-300/50 rounded-t-3xl shadow-2xl p-8 animate-in slide-in-from-bottom duration-300">
-                <div className="max-w-2xl mx-auto">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-info to-primary bg-clip-text text-transparent">
-                      🎲 Random Number Generator
-                    </h3>
-                    <p className="text-xs text-base-content/60">
-                      Powered by Flare Network&apos;s secure RandomNumberV2 on Coston2 Testnet
+                <div className="max-w-2xl mx-auto space-y-8">
+                  {/* Random Number Generator Section */}
+                  <div>
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-info to-primary bg-clip-text text-transparent">
+                        🎲 Random Number Generator
+                      </h3>
+                      <p className="text-xs text-base-content/60">
+                        Powered by Flare Network&apos;s secure RandomNumberV2 on Coston2 Testnet
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleGetRandomNumber}
+                      className="btn btn-info w-full btn-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      <span className="mr-2">🎲</span>
+                      Generate Random Number
+                    </button>
+                    <p className="text-xs text-base-content/50 mt-3 text-center">
+                      Check your browser console for details
                     </p>
                   </div>
-                  <button
-                    onClick={handleGetRandomNumber}
-                    className="btn btn-info w-full btn-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    <span className="mr-2">🎲</span>
-                    Generate Random Number
-                  </button>
-                  <p className="text-xs text-base-content/50 mt-3 text-center">
-                    Check your browser console for details
-                  </p>
+
+                  {/* Divider */}
+                  <div className="divider">AND</div>
+
+                  {/* Synapse Storage Section */}
+                  <div>
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
+                        💾 Filecoin Storage (Synapse SDK)
+                      </h3>
+                      <p className="text-xs text-base-content/60">
+                        Store and retrieve data on Filecoin Calibration Testnet
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSynapseStorage}
+                      className="btn btn-secondary w-full btn-lg text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      <span className="mr-2">💾</span>
+                      Test Filecoin Storage
+                    </button>
+                    <p className="text-xs text-base-content/50 mt-3 text-center">
+                      Requires SYNAPSE_PRIVATE_KEY in .env.local (backend only, no NEXT_PUBLIC_ prefix)
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
