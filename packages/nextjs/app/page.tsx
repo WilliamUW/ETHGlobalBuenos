@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Address } from "@scaffold-ui/components";
 import type { NextPage } from "next";
 import { hardhat } from "viem/chains";
@@ -63,6 +64,17 @@ const Home: NextPage = () => {
     setUploadedImage(null);
   }, []);
 
+  const handleGeminiTest = async () => {
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const result = await model.generateContent("Hello, how are you?");
+      console.log(result.response.text());
+    } catch (error) {
+      console.error("Gemini API error:", error);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center flex-col grow pt-10">
@@ -120,6 +132,13 @@ const Home: NextPage = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Gemini Test Button */}
+          <div className="mt-6 flex justify-center">
+            <button onClick={handleGeminiTest} className="btn btn-primary">
+              Test Gemini AI
+            </button>
           </div>
 
           <p className="text-center text-lg mt-8">
