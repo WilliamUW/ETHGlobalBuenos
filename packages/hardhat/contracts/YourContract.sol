@@ -7,6 +7,9 @@ import "hardhat/console.sol";
 // Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
 // import "@openzeppelin/contracts/access/Ownable.sol";
 
+import {ContractRegistry} from "@flarenetwork/flare-periphery-contracts/coston2/ContractRegistry.sol";
+import {RandomNumberV2Interface} from "@flarenetwork/flare-periphery-contracts/coston2/RandomNumberV2Interface.sol";
+
 /**
  * A smart contract that stores and manages reviews for wallet addresses
  * @author BuidlGuidl
@@ -14,6 +17,7 @@ import "hardhat/console.sol";
 contract YourContract {
     // State Variables
     address public immutable owner;
+    RandomNumberV2Interface internal randomV2;
 
     // Review struct definition
     struct Review {
@@ -27,15 +31,29 @@ contract YourContract {
 
     // Mapping from wallet address to array of reviews
     mapping(address => Review[]) private walletReviews;
+    
+    // --- ERC20 ReviewSync Token Implementation ---
+    string public constant tokenName = "ReviewSync Token";
+    string public constant tokenSymbol = "RST";
+    uint8 public constant decimals = 18;
+    uint256 public totalSupply;
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
 
     // Events: a way to emit log statements from smart contract that can be listened to by external parties
     event ReviewAdded(address indexed walletAddress, uint256 reviewIndex);
     event ReviewsDeleted(address indexed walletAddress, uint256 count);
+    event TokensRewarded(address indexed reviewer, uint256 amount);
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
     // Constructor: Called once on contract deployment
     // Check packages/hardhat/deploy/00_deploy_your_contract.ts
     constructor(address _owner) {
         owner = _owner;
+        // Initialize the RandomNumberV2 interface from Flare Network
+        randomV2 = ContractRegistry.getRandomNumberV2();
     }
 
     // Modifier: used to define a set of rules that must be met before or after a function is executed
@@ -84,6 +102,16 @@ contract YourContract {
         console.log("Review added for wallet %s on platform %s", _walletAddress, _platformName);
         
         emit ReviewAdded(_walletAddress, walletReviews[_walletAddress].length - 1);
+        
+        // Reward the reviewer with 1-5 ReviewSync tokens
+        (uint256 randomNumber, bool isSecure, ) = randomV2.getRandomNumber();
+        require(isSecure, "Random number is not secure");
+        uint256 mintAmount = (randomNumber % 5) + 1; // Get a number between 1 and 5
+        _mint(msg.sender, mintAmount * 10 ** uint256(decimals));
+        
+        console.log("Minted %s ReviewSync tokens to reviewer %s", mintAmount, msg.sender);
+        
+        emit TokensRewarded(msg.sender, mintAmount);
     }
 
     /**
@@ -121,6 +149,79 @@ contract YourContract {
      */
     function getReviewCount(address _walletAddress) public view returns (uint256) {
         return walletReviews[_walletAddress].length;
+    }
+
+    // --- ERC20 Functions ---
+    
+    /**
+     * Transfer tokens to another address
+     *
+     * @param _to - recipient address
+     * @param _value - amount to transfer
+     * @return bool - success status
+     */
+    function transfer(address _to, uint256 _value) external returns (bool) {
+        require(balanceOf[msg.sender] >= _value, "Insufficient balance");
+        _transfer(msg.sender, _to, _value);
+        return true;
+    }
+
+    /**
+     * Approve an address to spend tokens on your behalf
+     *
+     * @param _spender - address to approve
+     * @param _value - amount to approve
+     * @return bool - success status
+     */
+    function approve(address _spender, uint256 _value) external returns (bool) {
+        allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    /**
+     * Transfer tokens from one address to another (requires approval)
+     *
+     * @param _from - source address
+     * @param _to - recipient address
+     * @param _value - amount to transfer
+     * @return bool - success status
+     */
+    function transferFrom(address _from, address _to, uint256 _value) external returns (bool) {
+        require(balanceOf[_from] >= _value, "Insufficient balance");
+        require(allowance[_from][msg.sender] >= _value, "Allowance exceeded");
+        allowance[_from][msg.sender] -= _value;
+        _transfer(_from, _to, _value);
+        return true;
+    }
+
+    // --- Internal ERC20 Helpers ---
+    
+    /**
+     * Internal function to transfer tokens
+     *
+     * @param _from - source address
+     * @param _to - recipient address
+     * @param _value - amount to transfer
+     */
+    function _transfer(address _from, address _to, uint256 _value) internal {
+        require(_to != address(0), "Transfer to zero address");
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value;
+        emit Transfer(_from, _to, _value);
+    }
+
+    /**
+     * Internal function to mint new tokens
+     *
+     * @param _to - recipient address
+     * @param _value - amount to mint
+     */
+    function _mint(address _to, uint256 _value) internal {
+        require(_to != address(0), "Mint to zero address");
+        totalSupply += _value;
+        balanceOf[_to] += _value;
+        emit Transfer(address(0), _to, _value);
     }
 
     /**
